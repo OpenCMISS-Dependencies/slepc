@@ -469,9 +469,6 @@ if (PETSC_USE_SINGLE_LIBRARY)
         ${SLEPCSVD_SRCS} ${SLEPCPEP_SRCS} ${SLEPCNEP_SRCS}
         ${SLEPCMFN_SRCS})
   endif ()
-  get_target_property(OUTVA petsc INTERFACE_INCLUDE_DIRECTORIES)
-  message(STATUS "INCDIR OF PETSC: '${OUTVA}'")
-  #include_directories($<TARGET_PROPERTY:petsc,INTERFACE_INCLUDE_DIRECTORIES>)
   target_link_libraries (slepc petsc
       ${SLEPC_PACKAGE_LIBS}) #${PETSC_PACKAGE_LIBS}
   if (PETSC_WIN32FE)
@@ -504,7 +501,7 @@ if (BUILD_TESTS)
 endif()
 
 # Install Fortran modules
-install(DIRECTORY "${SLEPc_BINARY_DIR}/include/" DESTINATION include/petsc
+install(DIRECTORY "${SLEPc_BINARY_DIR}/include/" DESTINATION include/slepc
     FILES_MATCHING PATTERN "*.mod")
 # Install common headers    
 install(DIRECTORY include/ DESTINATION include/slepc
