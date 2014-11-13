@@ -379,6 +379,7 @@ log.Println('Checking PETSc installation...')
 if petscversion.VERSION > slepcversion.VERSION:
   log.Println('WARNING: PETSc version '+petscversion.VERSION+' is newer than SLEPc version '+slepcversion.VERSION)
 if petscversion.RELEASE != slepcversion.RELEASE:
+  log.Println('PETSC: ' + petscversion.RELEASE + ', SLEPc: ' + slepcversion.RELEASE)
   sys.exit('ERROR: Cannot mix release and development versions of SLEPc and PETSc')
 if petscconf.ISINSTALL:
   if os.path.realpath(petscconf.DESTDIR) != os.path.realpath(petscdir):
