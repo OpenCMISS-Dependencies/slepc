@@ -465,7 +465,7 @@ if (PETSC_USE_SINGLE_LIBRARY)
   if (PETSC_HAVE_CUDA)
     cuda_add_library (slepc ${SLEPCSYS_SRCS} ${SLEPCEPS_SRCS} ${SLEPCSVD_SRCS} ${SLEPCPEP_SRCS} ${SLEPCNEP_SRCS} ${SLEPCMFN_SRCS})
   else ()
-    add_library (slepc STATIC ${SLEPCSYS_SRCS} ${SLEPCEPS_SRCS}
+    add_library (slepc ${SLEPCSYS_SRCS} ${SLEPCEPS_SRCS}
         ${SLEPCSVD_SRCS} ${SLEPCPEP_SRCS} ${SLEPCNEP_SRCS}
         ${SLEPCMFN_SRCS})
   endif ()
