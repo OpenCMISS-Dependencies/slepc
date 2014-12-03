@@ -8,11 +8,6 @@ if(NOT PETSC_SOURCE_DIR)
     set(PETSC_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../petsc)
 endif()
 
-find_package(MPI REQUIRED)
-set(CMAKE_C_COMPILER ${MPI_C_COMPILER})
-set(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
-set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
-
 include (${PETSC_SOURCE_DIR}/OpenCMISSPETScConfig.cmake)
 include (./SLEPcConfig.cmake)
 
