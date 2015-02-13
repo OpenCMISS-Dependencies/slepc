@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 3.0)
 project (SLEPc VERSION 3.5 LANGUAGES C Fortran CXX)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
+option(PACKAGE_CONFIG_DIR "Directory for package config files (relative to CMAKE_INSTALL_PREFIX)" "lib/cmake")
 SET(CMAKE_NO_SYSTEM_FROM_IMPORTED YES)
 find_package(PETSC ${PETSC_VERSION} REQUIRED)
 if(NOT PETSC_SOURCE_DIR)
@@ -506,7 +507,7 @@ install(DIRECTORY include/ DESTINATION include/slepc
 install(DIRECTORY ${SLEPc_BINARY_DIR}/include/
     DESTINATION include/slepc
     FILES_MATCHING PATTERN "*.h")   
-install(EXPORT slepc-config DESTINATION lib/cmake)
+install(EXPORT slepc-config DESTINATION ${PACKAGE_CONFIG_DIR})
 include(CMakePackageConfigHelpers)
 WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/slepc-config-version.cmake COMPATIBILITY AnyNewerVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-version.cmake
