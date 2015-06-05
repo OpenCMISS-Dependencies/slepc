@@ -33,13 +33,7 @@ if (PETSC_HAVE_CUDA)
 endif ()
 
 include_directories ("${SLEPc_SOURCE_DIR}/include" "${SLEPc_BINARY_DIR}/include")
-
-#set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${SLEPc_BINARY_DIR}/lib" CACHE PATH "Output directory for SLEPc archives")
-#set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${SLEPc_BINARY_DIR}/lib" CACHE PATH "Output directory for SLEPc libraries")
 set (CMAKE_Fortran_MODULE_DIRECTORY "${SLEPc_BINARY_DIR}/include")
-#mark_as_advanced (CMAKE_ARCHIVE_OUTPUT_DIRECTORY CMAKE_LIBRARY_OUTPUT_DIRECTORY CMAKE_Fortran_MODULE_DIRECTORY)
-#set (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-#set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 ###################  The following describes the build  ####################
 
@@ -510,5 +504,16 @@ install(DIRECTORY ${SLEPc_BINARY_DIR}/include/
 install(EXPORT slepc-config DESTINATION ${PACKAGE_CONFIG_DIR})
 include(CMakePackageConfigHelpers)
 WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/slepc-config-version.cmake COMPATIBILITY AnyNewerVersion)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-version.cmake
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake 
+    "include(CMakeFindDependencyMacro)\r\n"
+    "set(_OLD_IMPORT_PREFIX \${_IMPORT_PREFIX})\r\n"
+    "find_dependency(PETSC ${PETSC_VERSION})\r\n"
+)
+if (PETSC_HAVE_CUDA)
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake "find_dependency(CUDA)\r\n")
+endif()
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake "set(_IMPORT_PREFIX \${_OLD_IMPORT_PREFIX})")
+install(FILES 
+    ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-version.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake
     DESTINATION ${PACKAGE_CONFIG_DIR})
