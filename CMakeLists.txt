@@ -506,13 +506,13 @@ include(CMakePackageConfigHelpers)
 WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/slepc-config-version.cmake COMPATIBILITY AnyNewerVersion)
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake 
     "include(CMakeFindDependencyMacro)\r\n"
-    "set(_OLD_IMPORT_PREFIX \${_IMPORT_PREFIX})\r\n"
+    	"set(${PROJECT_NAME}_IMPORT_PREFIX \${_IMPORT_PREFIX})\r\n"
     "find_dependency(PETSC ${PETSC_VERSION})\r\n"
 )
 if (PETSC_HAVE_CUDA)
     file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake "find_dependency(CUDA)\r\n")
 endif()
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake "set(_IMPORT_PREFIX \${_OLD_IMPORT_PREFIX})")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake "set(_IMPORT_PREFIX \${${PROJECT_NAME}_IMPORT_PREFIX})")
 install(FILES 
     ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-version.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake
