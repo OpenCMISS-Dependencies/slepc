@@ -1,8 +1,0 @@
-#if !defined(__SLEPCCONF_H)
-#define __SLEPCCONF_H
-
-#ifndef SLEPC_LIB_DIR
-#define SLEPC_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib"
-#endif
-
-#endif
