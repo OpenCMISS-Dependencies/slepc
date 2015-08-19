@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
-project (SLEPc VERSION 3.5 LANGUAGES C Fortran CXX)
+project (SLEPc VERSION 3.6 LANGUAGES C Fortran CXX)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
 option(PACKAGE_CONFIG_DIR "Directory for package config files (relative to CMAKE_INSTALL_PREFIX)" "lib/cmake")
@@ -39,26 +39,37 @@ if (PETSC_HAVE_FORTRAN)
     src/sys/ftn-auto/slepcinitf.c
     src/sys/ftn-custom/zslepc_start.c
     src/sys/ftn-custom/zslepc_startf.c
-    src/sys/classes/bv/interface/ftn-auto/bvopsf.c
-    src/sys/classes/bv/interface/ftn-auto/bvorthogf.c
-    src/sys/classes/bv/interface/ftn-auto/bvfuncf.c
     src/sys/classes/bv/interface/ftn-auto/bvbasicf.c
+    src/sys/classes/bv/interface/ftn-auto/bvorthogf.c
     src/sys/classes/bv/interface/ftn-auto/bvglobalf.c
-    src/sys/classes/rg/ftn-auto/rgbasicf.c
-    src/sys/classes/rg/ftn-auto/rgellipsef.c
-    src/sys/classes/rg/ftn-auto/rgintervalf.c
+    src/sys/classes/bv/interface/ftn-auto/bvopsf.c
+    src/sys/classes/bv/interface/ftn-auto/bvfuncf.c
+    src/sys/classes/bv/interface/ftn-custom/zbvf.c
+    src/sys/classes/rg/impls/ring/ftn-auto/rgringf.c
+    src/sys/classes/rg/impls/interval/ftn-auto/rgintervalf.c
+    src/sys/classes/rg/impls/ellipse/ftn-auto/rgellipsef.c
+    src/sys/classes/rg/impls/polygon/ftn-auto/rgpolygonf.c
+    src/sys/classes/rg/interface/ftn-auto/rgbasicf.c
+    src/sys/classes/rg/interface/ftn-custom/zrgf.c
+    src/sys/classes/ds/impls/pep/ftn-auto/dspepf.c
+    src/sys/classes/ds/impls/nep/ftn-auto/dsnepf.c
     src/sys/classes/ds/interface/ftn-auto/dsopsf.c
     src/sys/classes/ds/interface/ftn-auto/dsbasicf.c
+    src/sys/classes/ds/interface/ftn-auto/dsprivf.c
     src/sys/classes/ds/interface/ftn-custom/zdsf.c
-    src/sys/classes/fn/ftn-auto/fnbasicf.c
+    src/sys/classes/fn/impls/phi/ftn-auto/fnphif.c
+    src/sys/classes/fn/impls/rational/ftn-auto/fnrationalf.c
+    src/sys/classes/fn/impls/combine/ftn-auto/fncombinef.c
+    src/sys/classes/fn/interface/ftn-auto/fnbasicf.c
+    src/sys/classes/fn/interface/ftn-custom/zfnf.c
     src/sys/classes/st/impls/shell/ftn-auto/shellf.c
     src/sys/classes/st/impls/shell/ftn-custom/zshell.c
     src/sys/classes/st/impls/precond/ftn-auto/precondf.c
     src/sys/classes/st/impls/cayley/ftn-auto/cayleyf.c
     src/sys/classes/st/interface/ftn-auto/stfuncf.c
+    src/sys/classes/st/interface/ftn-auto/stsolvef.c
     src/sys/classes/st/interface/ftn-auto/stsetf.c
     src/sys/classes/st/interface/ftn-auto/stslesf.c
-    src/sys/classes/st/interface/ftn-auto/stsolvef.c
     src/sys/classes/st/interface/ftn-custom/zstf.c
     )
 endif ()
@@ -82,9 +93,9 @@ list (APPEND SLEPCSYS_SRCS
   src/sys/slepcsc.c
   src/sys/dlregisslepc.c
   src/sys/classes/bv/impls/contiguous/contig.c
-  src/sys/classes/bv/impls/svec/svec.c
-  src/sys/classes/bv/impls/vecs/vecs.c
   src/sys/classes/bv/impls/mat/bvmat.c
+  src/sys/classes/bv/impls/vecs/vecs.c
+  src/sys/classes/bv/impls/svec/svec.c
   src/sys/classes/bv/interface/bvbasic.c
   src/sys/classes/bv/interface/bvfunc.c
   src/sys/classes/bv/interface/bvops.c
@@ -92,26 +103,34 @@ list (APPEND SLEPCSYS_SRCS
   src/sys/classes/bv/interface/bvblas.c
   src/sys/classes/bv/interface/bvorthog.c
   src/sys/classes/bv/interface/bvregis.c
-  src/sys/classes/rg/rgbasic.c
-  src/sys/classes/rg/rginterval.c
-  src/sys/classes/rg/rgpolygon.c
-  src/sys/classes/rg/rgellipse.c
+  src/sys/classes/rg/impls/ring/rgring.c
+  src/sys/classes/rg/impls/interval/rginterval.c
+  src/sys/classes/rg/impls/ellipse/rgellipse.c
+  src/sys/classes/rg/impls/polygon/rgpolygon.c
+  src/sys/classes/rg/interface/rgbasic.c
+  src/sys/classes/rg/interface/rgregis.c
   src/sys/classes/ds/impls/ghep/dsghep.c
   src/sys/classes/ds/impls/hep/dshep.c
-  src/sys/classes/ds/impls/ghiep/dsghiep_ivit.c
   src/sys/classes/ds/impls/ghiep/dsghiep.c
-  src/sys/classes/ds/impls/ghiep/dsghiep_hz.c
-  src/sys/classes/ds/impls/ghiep/dsghiep_dqds.c
+  src/sys/classes/ds/impls/ghiep/invit.c
+  src/sys/classes/ds/impls/ghiep/hz.c
+  src/sys/classes/ds/impls/ghiep/dqds.c
   src/sys/classes/ds/impls/svd/dssvd.c
+  src/sys/classes/ds/impls/pep/dspep.c
   src/sys/classes/ds/impls/nhep/dsnhep.c
   src/sys/classes/ds/impls/nep/dsnep.c
   src/sys/classes/ds/impls/gnhep/dsgnhep.c
   src/sys/classes/ds/interface/dsbasic.c
   src/sys/classes/ds/interface/dsops.c
   src/sys/classes/ds/interface/dspriv.c
-  src/sys/classes/fn/fnbasic.c
-  src/sys/classes/fn/fnrational.c
-  src/sys/classes/fn/fnexp.c
+  src/sys/classes/fn/impls/phi/fnphi.c
+  src/sys/classes/fn/impls/log/fnlog.c
+  src/sys/classes/fn/impls/sqrt/fnsqrt.c
+  src/sys/classes/fn/impls/rational/fnrational.c
+  src/sys/classes/fn/impls/combine/fncombine.c
+  src/sys/classes/fn/impls/exp/fnexp.c
+  src/sys/classes/fn/interface/fnbasic.c
+  src/sys/classes/fn/interface/fnregis.c
   src/sys/classes/st/impls/sinvert/sinvert.c
   src/sys/classes/st/impls/shift/shift.c
   src/sys/classes/st/impls/shell/shell.c
@@ -139,6 +158,11 @@ if (NOT PETSC_USE_SINGLE_LIBRARY)
     set_target_properties (slepcsys PROPERTIES RULE_LAUNCH_LINK "${PETSC_WIN32FE}")
   endif ()
 endif ()
+if (PETSC_HAVE_FORTRAN AND SLEPC_HAVE_BLOPEX AND PETSC_USE_REAL_DOUBLE)
+  list (APPEND SLEPCEPS_SRCS
+    src/eps/impls/external/blopex/ftn-auto/blopexf.c
+    )
+endif ()
 if (SLEPC_HAVE_ARPACK)
   list (APPEND SLEPCEPS_SRCS
     src/eps/impls/external/arpack/arpack.c
@@ -147,24 +171,22 @@ endif ()
 if (PETSC_HAVE_FORTRAN)
   list (APPEND SLEPCEPS_SRCS
     src/eps/impls/power/ftn-auto/powerf.c
+    src/eps/impls/cg/lobpcg/ftn-auto/lobpcgf.c
     src/eps/impls/cg/rqcg/ftn-auto/rqcgf.c
+    src/eps/impls/ciss/ftn-auto/cissf.c
     src/eps/impls/krylov/krylovschur/ftn-auto/krylovschurf.c
     src/eps/impls/krylov/arnoldi/ftn-auto/arnoldif.c
     src/eps/impls/krylov/lanczos/ftn-auto/lanczosf.c
     src/eps/impls/davidson/jd/ftn-auto/jdf.c
     src/eps/impls/davidson/gd/ftn-auto/gdf.c
-    src/eps/interface/ftn-auto/epsdefaultf.c
-    src/eps/interface/ftn-auto/epssetupf.c
+    src/eps/interface/ftn-auto/epsviewf.c
     src/eps/interface/ftn-auto/epsoptsf.c
     src/eps/interface/ftn-auto/epsmonf.c
-    src/eps/interface/ftn-auto/epsbasicf.c
+    src/eps/interface/ftn-auto/epsdefaultf.c
+    src/eps/interface/ftn-auto/epssetupf.c
     src/eps/interface/ftn-auto/epssolvef.c
+    src/eps/interface/ftn-auto/epsbasicf.c
     src/eps/interface/ftn-custom/zepsf.c
-    )
-endif ()
-if (PETSC_HAVE_FORTRAN AND PETSC_USE_COMPLEX)
-  list (APPEND SLEPCEPS_SRCS
-    src/eps/impls/ciss/ftn-auto/cissf.c
     )
 endif ()
 if (PETSC_HAVE_FORTRAN AND SLEPC_HAVE_FEAST AND PETSC_USE_COMPLEX)
@@ -176,28 +198,30 @@ list (APPEND SLEPCEPS_SRCS
   src/eps/impls/power/power.c
   src/eps/impls/lapack/lapack.c
   src/eps/impls/subspace/subspace.c
+  src/eps/impls/cg/lobpcg/lobpcg.c
   src/eps/impls/cg/rqcg/rqcg.c
-  src/eps/impls/krylov/krylov.c
+  src/eps/impls/ciss/ciss.c
+  src/eps/impls/krylov/epskrylov.c
   src/eps/impls/krylov/krylovschur/krylovschur.c
   src/eps/impls/krylov/krylovschur/ks-symm.c
   src/eps/impls/krylov/krylovschur/ks-slice.c
   src/eps/impls/krylov/krylovschur/ks-indef.c
   src/eps/impls/krylov/arnoldi/arnoldi.c
   src/eps/impls/krylov/lanczos/lanczos.c
+  src/eps/impls/davidson/davidson.c
+  src/eps/impls/davidson/dvdcalcpairs.c
+  src/eps/impls/davidson/dvdimprovex.c
+  src/eps/impls/davidson/dvdinitv.c
+  src/eps/impls/davidson/dvdschm.c
+  src/eps/impls/davidson/dvdtestconv.c
+  src/eps/impls/davidson/dvdupdatev.c
+  src/eps/impls/davidson/dvdutils.c
+  src/eps/impls/davidson/dvdgd2.c
   src/eps/impls/davidson/jd/jd.c
   src/eps/impls/davidson/gd/gd.c
-  src/eps/impls/davidson/common/davidson.c
-  src/eps/impls/davidson/common/dvd_calcpairs.c
-  src/eps/impls/davidson/common/dvd_improvex.c
-  src/eps/impls/davidson/common/dvd_initv.c
-  src/eps/impls/davidson/common/dvd_schm.c
-  src/eps/impls/davidson/common/dvd_testconv.c
-  src/eps/impls/davidson/common/dvd_updatev.c
-  src/eps/impls/davidson/common/dvd_utils.c
-  src/eps/impls/davidson/common/dvd_gd2.c
-  src/eps/impls/davidson/common/dvd_orth.c
   src/eps/interface/epsmon.c
   src/eps/interface/epsbasic.c
+  src/eps/interface/epsview.c
   src/eps/interface/epsdefault.c
   src/eps/interface/epsregis.c
   src/eps/interface/epsopts.c
@@ -213,7 +237,6 @@ endif ()
 if (PETSC_HAVE_FORTRAN AND SLEPC_HAVE_PRIMME)
   list (APPEND SLEPCEPS_SRCS
     src/eps/impls/external/primme/ftn-auto/primmef.c
-    src/eps/impls/external/primme/ftn-custom/zprimmef.c
     )
 endif ()
 if (SLEPC_HAVE_FEAST AND PETSC_USE_COMPLEX)
@@ -224,11 +247,6 @@ endif ()
 if (SLEPC_HAVE_BLZPACK AND NOT PETSC_USE_COMPLEX)
   list (APPEND SLEPCEPS_SRCS
     src/eps/impls/external/blzpack/blzpack.c
-    )
-endif ()
-if (PETSC_USE_COMPLEX)
-  list (APPEND SLEPCEPS_SRCS
-    src/eps/impls/ciss/ciss.c
     )
 endif ()
 if (SLEPC_HAVE_BLOPEX AND PETSC_USE_REAL_DOUBLE)
@@ -268,15 +286,16 @@ if (NOT PETSC_USE_SINGLE_LIBRARY)
 endif ()
 if (PETSC_HAVE_FORTRAN)
   list (APPEND SLEPCSVD_SRCS
-    src/svd/impls/trlanczos/ftn-auto/trlanczosf.c
+    src/svd/impls/lanczos/ftn-auto/gklanczosf.c
     src/svd/impls/cyclic/ftn-auto/cyclicf.c
     src/svd/impls/cross/ftn-auto/crossf.c
-    src/svd/impls/lanczos/ftn-auto/gklanczosf.c
-    src/svd/interface/ftn-auto/svdmonf.c
-    src/svd/interface/ftn-auto/svdsetupf.c
+    src/svd/impls/trlanczos/ftn-auto/trlanczosf.c
+    src/svd/interface/ftn-auto/svdviewf.c
     src/svd/interface/ftn-auto/svdbasicf.c
+    src/svd/interface/ftn-auto/svdmonf.c
     src/svd/interface/ftn-auto/svdsolvef.c
     src/svd/interface/ftn-auto/svdoptsf.c
+    src/svd/interface/ftn-auto/svdsetupf.c
     src/svd/interface/ftn-custom/zsvdf.c
     )
 endif ()
@@ -287,12 +306,13 @@ if (PETSC_USING_F90)
 endif ()
 list (APPEND SLEPCSVD_SRCS
   src/svd/impls/lapack/svdlapack.c
-  src/svd/impls/trlanczos/trlanczos.c
+  src/svd/impls/lanczos/gklanczos.c
   src/svd/impls/cyclic/cyclic.c
   src/svd/impls/cross/cross.c
-  src/svd/impls/lanczos/gklanczos.c
+  src/svd/impls/trlanczos/trlanczos.c
   src/svd/interface/svdregis.c
   src/svd/interface/svdbasic.c
+  src/svd/interface/svdview.c
   src/svd/interface/svdopts.c
   src/svd/interface/svdsetup.c
   src/svd/interface/svdsolve.c
@@ -314,15 +334,18 @@ if (NOT PETSC_USE_SINGLE_LIBRARY)
 endif ()
 if (PETSC_HAVE_FORTRAN)
   list (APPEND SLEPCPEP_SRCS
-    src/pep/impls/qarnoldi/ftn-auto/qarnoldif.c
+    src/pep/impls/jd/ftn-auto/pjdoptf.c
+    src/pep/impls/krylov/qarnoldi/ftn-auto/qarnoldif.c
+    src/pep/impls/krylov/stoar/ftn-auto/stoarf.c
+    src/pep/impls/krylov/toar/ftn-auto/ptoarf.c
     src/pep/impls/linear/ftn-auto/linearf.c
-    src/pep/impls/toar/ftn-auto/ptoarf.c
     src/pep/interface/ftn-auto/pepdefaultf.c
     src/pep/interface/ftn-auto/pepmonf.c
-    src/pep/interface/ftn-auto/pepsetupf.c
     src/pep/interface/ftn-auto/pepsolvef.c
     src/pep/interface/ftn-auto/pepoptsf.c
+    src/pep/interface/ftn-auto/pepviewf.c
     src/pep/interface/ftn-auto/pepbasicf.c
+    src/pep/interface/ftn-auto/pepsetupf.c
     src/pep/interface/ftn-custom/zpepf.c
     )
 endif ()
@@ -332,13 +355,18 @@ if (PETSC_USING_F90)
     )
 endif ()
 list (APPEND SLEPCPEP_SRCS
-  src/pep/impls/qarnoldi/qarnoldi.c
+  src/pep/impls/jd/pjd.c
+  src/pep/impls/jd/pjdopt.c
+  src/pep/impls/krylov/pepkrylov.c
+  src/pep/impls/krylov/qarnoldi/qarnoldi.c
+  src/pep/impls/krylov/stoar/stoar.c
+  src/pep/impls/krylov/toar/ptoar.c
+  src/pep/impls/krylov/toar/nrefine.c
   src/pep/impls/linear/linear.c
   src/pep/impls/linear/qeplin.c
-  src/pep/impls/toar/ptoar.c
-  src/pep/impls/toar/nrefinement.c
   src/pep/interface/pepmon.c
   src/pep/interface/pepbasic.c
+  src/pep/interface/pepview.c
   src/pep/interface/pepdefault.c
   src/pep/interface/pepregis.c
   src/pep/interface/pepopts.c
@@ -360,17 +388,28 @@ if (NOT PETSC_USE_SINGLE_LIBRARY)
     set_target_properties (slepcpep PROPERTIES RULE_LAUNCH_LINK "${PETSC_WIN32FE}")
   endif ()
 endif ()
+if (PETSC_USE_COMPLEX)
+  list (APPEND SLEPCNEP_SRCS
+    src/nep/impls/ciss/nciss.c
+    )
+endif ()
 if (PETSC_HAVE_FORTRAN)
   list (APPEND SLEPCNEP_SRCS
     src/nep/impls/interpol/ftn-auto/interpolf.c
     src/nep/impls/slp/ftn-auto/slpf.c
-    src/nep/interface/ftn-auto/nepoptsf.c
-    src/nep/interface/ftn-auto/nepmonf.c
-    src/nep/interface/ftn-auto/nepsolvef.c
-    src/nep/interface/ftn-auto/nepbasicf.c
+    src/nep/interface/ftn-auto/nepviewf.c
     src/nep/interface/ftn-auto/nepsetupf.c
     src/nep/interface/ftn-auto/nepdefaultf.c
+    src/nep/interface/ftn-auto/nepsolvef.c
+    src/nep/interface/ftn-auto/nepoptsf.c
+    src/nep/interface/ftn-auto/nepmonf.c
+    src/nep/interface/ftn-auto/nepbasicf.c
     src/nep/interface/ftn-custom/znepf.c
+    )
+endif ()
+if (PETSC_HAVE_FORTRAN AND PETSC_USE_COMPLEX)
+  list (APPEND SLEPCNEP_SRCS
+    src/nep/impls/ciss/ftn-auto/ncissf.c
     )
 endif ()
 if (PETSC_USING_F90)
@@ -379,12 +418,13 @@ if (PETSC_USING_F90)
     )
 endif ()
 list (APPEND SLEPCNEP_SRCS
+  src/nep/impls/rii/rii.c
   src/nep/impls/interpol/interpol.c
   src/nep/impls/slp/slp.c
   src/nep/impls/narnoldi/narnoldi.c
-  src/nep/impls/rii/rii.c
   src/nep/interface/nepmon.c
   src/nep/interface/nepbasic.c
+  src/nep/interface/nepview.c
   src/nep/interface/nepdefault.c
   src/nep/interface/nepregis.c
   src/nep/interface/nepopts.c
@@ -408,10 +448,10 @@ if (NOT PETSC_USE_SINGLE_LIBRARY)
 endif ()
 if (PETSC_HAVE_FORTRAN)
   list (APPEND SLEPCMFN_SRCS
-    src/mfn/interface/ftn-auto/mfnbasicf.c
-    src/mfn/interface/ftn-auto/mfnsolvef.c
-    src/mfn/interface/ftn-auto/mfnoptsf.c
     src/mfn/interface/ftn-auto/mfnsetupf.c
+    src/mfn/interface/ftn-auto/mfnsolvef.c
+    src/mfn/interface/ftn-auto/mfnbasicf.c
+    src/mfn/interface/ftn-auto/mfnoptsf.c
     src/mfn/interface/ftn-auto/mfnmonf.c
     src/mfn/interface/ftn-custom/zmfnf.c
     )
@@ -454,7 +494,7 @@ if (PETSC_USE_SINGLE_LIBRARY)
         ${SLEPCMFN_SRCS})
   endif ()
   target_link_libraries (slepc petsc
-      ${SLEPC_PACKAGE_LIBS}) #${PETSC_PACKAGE_LIBS}
+      ${SLEPC_PACKAGE_LIBS})
   if (PETSC_WIN32FE)
     set_target_properties (slepc PROPERTIES RULE_LAUNCH_COMPILE "${PETSC_WIN32FE}")
     set_target_properties (slepc PROPERTIES RULE_LAUNCH_LINK "${PETSC_WIN32FE}")
