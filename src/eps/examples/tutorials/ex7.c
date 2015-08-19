@@ -1,7 +1,7 @@
 /*
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -37,13 +37,14 @@ int main(int argc,char **argv)
   Mat            A,B;             /* matrices */
   EPS            eps;             /* eigenproblem solver context */
   ST             st;
+  KSP            ksp;
   EPSType        type;
   PetscReal      tol;
   Vec            xr,xi,*Iv,*Cv;
   PetscInt       nev,maxit,i,its,lits,nconv,nini=0,ncon=0;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
-  PetscBool      flg,evecs,ishermitian;
+  PetscBool      flg,evecs,ishermitian,terse;
   PetscErrorCode ierr;
 
   SlepcInitialize(&argc,&argv,(char*)0,help);
@@ -79,8 +80,8 @@ int main(int argc,char **argv)
     B = NULL;
   }
 
-  ierr = MatGetVecs(A,NULL,&xr);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,NULL,&xi);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,NULL,&xr);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,NULL,&xi);CHKERRQ(ierr);
 
   /*
      Read user constraints if available
@@ -151,7 +152,8 @@ int main(int argc,char **argv)
   ierr = EPSGetIterationNumber(eps,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," Number of iterations of the method: %D\n",its);CHKERRQ(ierr);
   ierr = EPSGetST(eps,&st);CHKERRQ(ierr);
-  ierr = STGetOperationCounters(st,NULL,&lits);CHKERRQ(ierr);
+  ierr = STGetKSP(st,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetTotalIterations(ksp,&lits);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," Number of linear iterations of the method: %D\n",lits);CHKERRQ(ierr);
   ierr = EPSGetType(eps,&type);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," Solution method: %s\n\n",type);CHKERRQ(ierr);
@@ -164,7 +166,19 @@ int main(int argc,char **argv)
                     Display solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = EPSPrintSolution(eps,NULL);CHKERRQ(ierr);
+  /*
+     Show detailed info unless -terse option is given by user
+   */
+  ierr = PetscOptionsHasName(NULL,"-terse",&terse);CHKERRQ(ierr);
+  if (terse) {
+    ierr = EPSErrorView(eps,EPS_ERROR_RELATIVE,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = EPSReasonView(eps,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = EPSErrorView(eps,EPS_ERROR_RELATIVE,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
   /*
      Save eigenvectors, if requested
   */

@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* pepopts.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -59,14 +59,29 @@ extern void PetscRmPointer(void*);
 #define pepsetwhicheigenpairs_ pepsetwhicheigenpairs
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define pepgetwhicheigenpairs_ PEPGETWHICHEIGENPAIRS
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define pepgetwhicheigenpairs_ pepgetwhicheigenpairs
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define pepsetproblemtype_ PEPSETPROBLEMTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define pepsetproblemtype_ pepsetproblemtype
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define pepgetproblemtype_ PEPGETPROBLEMTYPE
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define pepgetproblemtype_ pepgetproblemtype
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define pepsetbasis_ PEPSETBASIS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define pepsetbasis_ pepsetbasis
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define pepgetbasis_ PEPGETBASIS
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define pepgetbasis_ pepgetbasis
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define pepsettrackall_ PEPSETTRACKALL
@@ -142,11 +157,23 @@ PETSC_EXTERN void PETSC_STDCALL  pepsetdimensions_(PEP *pep,PetscInt *nev,PetscI
 PETSC_EXTERN void PETSC_STDCALL  pepsetwhicheigenpairs_(PEP *pep,PEPWhich *which, int *__ierr ){
 *__ierr = PEPSetWhichEigenpairs(*pep,*which);
 }
+PETSC_EXTERN void PETSC_STDCALL  pepgetwhicheigenpairs_(PEP *pep,PEPWhich *which, int *__ierr ){
+*__ierr = PEPGetWhichEigenpairs(*pep,
+	(PEPWhich* )PetscToPointer((which) ));
+}
 PETSC_EXTERN void PETSC_STDCALL  pepsetproblemtype_(PEP *pep,PEPProblemType *type, int *__ierr ){
 *__ierr = PEPSetProblemType(*pep,*type);
 }
+PETSC_EXTERN void PETSC_STDCALL  pepgetproblemtype_(PEP *pep,PEPProblemType *type, int *__ierr ){
+*__ierr = PEPGetProblemType(*pep,
+	(PEPProblemType* )PetscToPointer((type) ));
+}
 PETSC_EXTERN void PETSC_STDCALL  pepsetbasis_(PEP *pep,PEPBasis *basis, int *__ierr ){
 *__ierr = PEPSetBasis(*pep,*basis);
+}
+PETSC_EXTERN void PETSC_STDCALL  pepgetbasis_(PEP *pep,PEPBasis *basis, int *__ierr ){
+*__ierr = PEPGetBasis(*pep,
+	(PEPBasis* )PetscToPointer((basis) ));
 }
 PETSC_EXTERN void PETSC_STDCALL  pepsettrackall_(PEP *pep,PetscBool *trackall, int *__ierr ){
 *__ierr = PEPSetTrackAll(*pep,*trackall);
@@ -161,12 +188,14 @@ PETSC_EXTERN void PETSC_STDCALL  pepgetconvergencetest_(PEP *pep,PEPConv *conv, 
 *__ierr = PEPGetConvergenceTest(*pep,
 	(PEPConv* )PetscToPointer((conv) ));
 }
-PETSC_EXTERN void PETSC_STDCALL  pepsetscale_(PEP *pep,PEPScale *scale,PetscReal *alpha,PetscInt *its,PetscReal *lambda, int *__ierr ){
-*__ierr = PEPSetScale(*pep,*scale,*alpha,*its,*lambda);
+PETSC_EXTERN void PETSC_STDCALL  pepsetscale_(PEP *pep,PEPScale *scale,PetscReal *alpha,Vec Dl,Vec Dr,PetscInt *its,PetscReal *lambda, int *__ierr ){
+*__ierr = PEPSetScale(*pep,*scale,*alpha,
+	(Vec)PetscToPointer((Dl) ),
+	(Vec)PetscToPointer((Dr) ),*its,*lambda);
 }
-PETSC_EXTERN void PETSC_STDCALL  pepgetscale_(PEP *pep,PEPScale *scale,PetscReal *alpha,PetscInt *its,PetscReal *lambda, int *__ierr ){
+PETSC_EXTERN void PETSC_STDCALL  pepgetscale_(PEP *pep,PEPScale *scale,PetscReal *alpha,Vec *Dl,Vec *Dr,PetscInt *its,PetscReal *lambda, int *__ierr ){
 *__ierr = PEPGetScale(*pep,
-	(PEPScale* )PetscToPointer((scale) ),alpha,its,lambda);
+	(PEPScale* )PetscToPointer((scale) ),alpha,Dl,Dr,its,lambda);
 }
 PETSC_EXTERN void PETSC_STDCALL  pepsetextract_(PEP *pep,PEPExtract *extract, int *__ierr ){
 *__ierr = PEPSetExtract(*pep,*extract);

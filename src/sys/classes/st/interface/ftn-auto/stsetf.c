@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* stset.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -47,6 +47,11 @@ extern void PetscRmPointer(void*);
 #define stsetmatmode_ STSETMATMODE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define stsetmatmode_ stsetmatmode
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define stgetmatmode_ STGETMATMODE
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define stgetmatmode_ stgetmatmode
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define stsettransform_ STSETTRANSFORM
@@ -75,6 +80,10 @@ PETSC_EXTERN void PETSC_STDCALL  stgetmatstructure_(ST *st,MatStructure *str, in
 }
 PETSC_EXTERN void PETSC_STDCALL  stsetmatmode_(ST *st,STMatMode *mode, int *__ierr ){
 *__ierr = STSetMatMode(*st,*mode);
+}
+PETSC_EXTERN void PETSC_STDCALL  stgetmatmode_(ST *st,STMatMode *mode, int *__ierr ){
+*__ierr = STGetMatMode(*st,
+	(STMatMode* )PetscToPointer((mode) ));
 }
 PETSC_EXTERN void PETSC_STDCALL  stsettransform_(ST *st,PetscBool *flg, int *__ierr ){
 *__ierr = STSetTransform(*st,*flg);

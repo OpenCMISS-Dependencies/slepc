@@ -1,0 +1,97 @@
+        subroutine FNCreate(comm, newfn ,ierr)
+       integer comm ! MPI_Comm
+       FN newfn ! FN
+       integer ierr
+       end subroutine
+        subroutine FNSetScale(fn, alpha, beta ,ierr)
+       FN fn ! FN
+       PetscScalar alpha ! PetscScalar
+       PetscScalar beta ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine FNGetScale(fn, alpha, beta ,ierr)
+       FN fn ! FN
+       PetscScalar alpha ! PetscScalar
+       PetscScalar beta ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine FNEvaluateFunction(fn, x, y ,ierr)
+       FN fn ! FN
+       PetscScalar x ! PetscScalar
+       PetscScalar y ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine FNEvaluateDerivative(fn, x, y ,ierr)
+       FN fn ! FN
+       PetscScalar x ! PetscScalar
+       PetscScalar y ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine FNEvaluateFunctionMat(fn, A, B ,ierr)
+       FN fn ! FN
+       Mat A ! Mat
+       Mat B ! Mat
+       integer ierr
+       end subroutine
+        subroutine FNSetFromOptions(fn ,ierr)
+       FN fn ! FN
+       integer ierr
+       end subroutine
+        subroutine FNDuplicate(fn, comm, newfn ,ierr)
+       FN fn ! FN
+       integer comm ! MPI_Comm
+       FN newfn ! FN
+       integer ierr
+       end subroutine
+        subroutine FNDestroy(fn ,ierr)
+       FN fn ! FN
+       integer ierr
+       end subroutine
+        subroutine FNPhiSetIndex(fn, k ,ierr)
+       FN fn ! FN
+       PetscInt k ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine FNPhiGetIndex(fn, k ,ierr)
+       FN fn ! FN
+       PetscInt k ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine FNRationalSetNumerator(fn, np, pcoeff ,ierr)
+       FN fn ! FN
+       PetscInt np ! PetscInt
+       PetscScalar pcoeff ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine FNRationalGetNumerator(fn, np, pcoeff ,ierr)
+       FN fn ! FN
+       PetscInt np ! PetscInt
+       PetscScalar pcoeff (*) ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine FNRationalSetDenominator(fn, nq, qcoeff ,ierr)
+       FN fn ! FN
+       PetscInt nq ! PetscInt
+       PetscScalar qcoeff ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine FNRationalGetDenominator(fn, nq, qcoeff ,ierr)
+       FN fn ! FN
+       PetscInt nq ! PetscInt
+       PetscScalar qcoeff (*) ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine FNCombineSetChildren(fn, comb, f1, f2 ,ierr)
+       FN fn ! FN
+       FNCombineType comb ! FNCombineType
+       FN f1 ! FN
+       FN f2 ! FN
+       integer ierr
+       end subroutine
+        subroutine FNCombineGetChildren(fn, comb, f1, f2 ,ierr)
+       FN fn ! FN
+       FNCombineType comb ! FNCombineType
+       FN f1 ! FN
+       FN f2 ! FN
+       integer ierr
+       end subroutine

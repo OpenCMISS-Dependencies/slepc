@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* mfnopts.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -52,21 +52,6 @@ extern void PetscRmPointer(void*);
 #define mfnsetdimensions_ MFNSETDIMENSIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define mfnsetdimensions_ mfnsetdimensions
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define mfnsetfunction_ MFNSETFUNCTION
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define mfnsetfunction_ mfnsetfunction
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define mfnsetscalefactor_ MFNSETSCALEFACTOR
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define mfnsetscalefactor_ mfnsetscalefactor
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define mfngetscalefactor_ MFNGETSCALEFACTOR
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define mfngetscalefactor_ mfngetscalefactor
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define mfnseterrorifnotconverged_ MFNSETERRORIFNOTCONVERGED
@@ -98,15 +83,6 @@ PETSC_EXTERN void PETSC_STDCALL  mfngetdimensions_(MFN *mfn,PetscInt *ncv, int *
 }
 PETSC_EXTERN void PETSC_STDCALL  mfnsetdimensions_(MFN *mfn,PetscInt *ncv, int *__ierr ){
 *__ierr = MFNSetDimensions(*mfn,*ncv);
-}
-PETSC_EXTERN void PETSC_STDCALL  mfnsetfunction_(MFN *mfn,SlepcFunction *fun, int *__ierr ){
-*__ierr = MFNSetFunction(*mfn,*fun);
-}
-PETSC_EXTERN void PETSC_STDCALL  mfnsetscalefactor_(MFN *mfn,PetscScalar *alpha, int *__ierr ){
-*__ierr = MFNSetScaleFactor(*mfn,*alpha);
-}
-PETSC_EXTERN void PETSC_STDCALL  mfngetscalefactor_(MFN *mfn,PetscScalar *alpha, int *__ierr ){
-*__ierr = MFNGetScaleFactor(*mfn,alpha);
 }
 PETSC_EXTERN void PETSC_STDCALL  mfnseterrorifnotconverged_(MFN *mfn,PetscBool *flg, int *__ierr ){
 *__ierr = MFNSetErrorIfNotConverged(*mfn,*flg);

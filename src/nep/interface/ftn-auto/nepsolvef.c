@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* nepsolve.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -59,6 +59,11 @@ extern void PetscRmPointer(void*);
 #define nepgetconverged_ nepgetconverged
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define nepgetconvergedreason_ NEPGETCONVERGEDREASON
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define nepgetconvergedreason_ nepgetconvergedreason
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define nepgeteigenpair_ NEPGETEIGENPAIR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define nepgeteigenpair_ nepgeteigenpair
@@ -69,14 +74,9 @@ extern void PetscRmPointer(void*);
 #define nepgeterrorestimate_ nepgeterrorestimate
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define nepcomputeresidualnorm_ NEPCOMPUTERESIDUALNORM
+#define nepcomputeerror_ NEPCOMPUTEERROR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define nepcomputeresidualnorm_ nepcomputeresidualnorm
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define nepcomputerelativeerror_ NEPCOMPUTERELATIVEERROR
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define nepcomputerelativeerror_ nepcomputerelativeerror
+#define nepcomputeerror_ nepcomputeerror
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define nepcomputefunction_ NEPCOMPUTEFUNCTION
@@ -121,6 +121,10 @@ PETSC_EXTERN void PETSC_STDCALL  nepgetiterationnumber_(NEP *nep,PetscInt *its, 
 PETSC_EXTERN void PETSC_STDCALL  nepgetconverged_(NEP *nep,PetscInt *nconv, int *__ierr ){
 *__ierr = NEPGetConverged(*nep,nconv);
 }
+PETSC_EXTERN void PETSC_STDCALL  nepgetconvergedreason_(NEP *nep,NEPConvergedReason *reason, int *__ierr ){
+*__ierr = NEPGetConvergedReason(*nep,
+	(NEPConvergedReason* )PetscToPointer((reason) ));
+}
 PETSC_EXTERN void PETSC_STDCALL  nepgeteigenpair_(NEP *nep,PetscInt *i,PetscScalar *eigr,PetscScalar *eigi,Vec Vr,Vec Vi, int *__ierr ){
 *__ierr = NEPGetEigenpair(*nep,*i,eigr,eigi,
 	(Vec)PetscToPointer((Vr) ),
@@ -129,11 +133,8 @@ PETSC_EXTERN void PETSC_STDCALL  nepgeteigenpair_(NEP *nep,PetscInt *i,PetscScal
 PETSC_EXTERN void PETSC_STDCALL  nepgeterrorestimate_(NEP *nep,PetscInt *i,PetscReal *errest, int *__ierr ){
 *__ierr = NEPGetErrorEstimate(*nep,*i,errest);
 }
-PETSC_EXTERN void PETSC_STDCALL  nepcomputeresidualnorm_(NEP *nep,PetscInt *i,PetscReal *norm, int *__ierr ){
-*__ierr = NEPComputeResidualNorm(*nep,*i,norm);
-}
-PETSC_EXTERN void PETSC_STDCALL  nepcomputerelativeerror_(NEP *nep,PetscInt *i,PetscReal *error, int *__ierr ){
-*__ierr = NEPComputeRelativeError(*nep,*i,error);
+PETSC_EXTERN void PETSC_STDCALL  nepcomputeerror_(NEP *nep,PetscInt *i,NEPErrorType *type,PetscReal *error, int *__ierr ){
+*__ierr = NEPComputeError(*nep,*i,*type,error);
 }
 PETSC_EXTERN void PETSC_STDCALL  nepcomputefunction_(NEP *nep,PetscScalar *lambda,Mat A,Mat B, int *__ierr ){
 *__ierr = NEPComputeFunction(*nep,*lambda,

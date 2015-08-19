@@ -3,7 +3,7 @@
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -21,8 +21,8 @@
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
 
-#include <slepc-private/slepcimpl.h>
-#include <petsc-private/fortranimpl.h>
+#include <slepc/private/slepcimpl.h>
+#include <petsc/private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitialize_              PETSCINITIALIZE

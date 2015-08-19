@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* stsles.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -57,16 +57,6 @@ extern void PetscRmPointer(void*);
 #define stgetksp_ STGETKSP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define stgetksp_ stgetksp
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define stgetoperationcounters_ STGETOPERATIONCOUNTERS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define stgetoperationcounters_ stgetoperationcounters
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define stresetoperationcounters_ STRESETOPERATIONCOUNTERS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define stresetoperationcounters_ stresetoperationcounters
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define stchecknullspace_ STCHECKNULLSPACE
@@ -105,12 +95,6 @@ PETSC_EXTERN void PETSC_STDCALL  stsetksp_(ST *st,KSP ksp, int *__ierr ){
 }
 PETSC_EXTERN void PETSC_STDCALL  stgetksp_(ST *st,KSP* ksp, int *__ierr ){
 *__ierr = STGetKSP(*st,ksp);
-}
-PETSC_EXTERN void PETSC_STDCALL  stgetoperationcounters_(ST *st,PetscInt* ops,PetscInt* lits, int *__ierr ){
-*__ierr = STGetOperationCounters(*st,ops,lits);
-}
-PETSC_EXTERN void PETSC_STDCALL  stresetoperationcounters_(ST *st, int *__ierr ){
-*__ierr = STResetOperationCounters(*st);
 }
 PETSC_EXTERN void PETSC_STDCALL  stchecknullspace_(ST *st,BV *V, int *__ierr ){
 *__ierr = STCheckNullSpace(*st,*V);

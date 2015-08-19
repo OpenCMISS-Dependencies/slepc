@@ -15,7 +15,7 @@
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -33,7 +33,7 @@
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
 
-#include <slepc-private/nepimpl.h>         /*I "slepcnep.h" I*/
+#include <slepc/private/nepimpl.h>         /*I "slepcnep.h" I*/
 
 typedef struct {
   EPS       eps;             /* linear eigensolver for T*z = mu*Tp*z */
@@ -148,14 +148,16 @@ PetscErrorCode NEPSolve_SLP(NEP nep)
 
 #undef __FUNCT__
 #define __FUNCT__ "NEPSetFromOptions_SLP"
-PetscErrorCode NEPSetFromOptions_SLP(NEP nep)
+PetscErrorCode NEPSetFromOptions_SLP(PetscOptions *PetscOptionsObject,NEP nep)
 {
   PetscErrorCode ierr;
   NEP_SLP        *ctx = (NEP_SLP*)nep->data;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"NEP SLP Options");CHKERRQ(ierr);
   if (!ctx->eps) { ierr = NEPSLPGetEPS(nep,&ctx->eps);CHKERRQ(ierr); }
   ierr = EPSSetFromOptions(ctx->eps);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

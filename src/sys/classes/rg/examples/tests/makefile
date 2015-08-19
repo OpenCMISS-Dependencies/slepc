@@ -1,7 +1,7 @@
 #
 #  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #  SLEPc - Scalable Library for Eigenvalue Problem Computations
-#  Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+#  Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 #
 #  This file is part of SLEPc.
 #
@@ -31,7 +31,7 @@ TESTS      = test1
 
 TESTEXAMPLES_C       = test1.PETSc runtest1_1 test1.rm
 
-include ${SLEPC_DIR}/conf/slepc_common
+include ${SLEPC_DIR}/lib/slepc/conf/slepc_common
 
 test1: test1.o chkopts
 	-${CLINKER} -o test1 test1.o ${SLEPC_SYS_LIB}

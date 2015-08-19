@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* power.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -33,6 +33,11 @@ extern void PetscRmPointer(void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define epspowersetshifttype_ epspowersetshifttype
 #endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epspowergetshifttype_ EPSPOWERGETSHIFTTYPE
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epspowergetshifttype_ epspowergetshifttype
+#endif
 
 
 /* Definitions of Fortran Wrapper routines */
@@ -41,6 +46,10 @@ extern "C" {
 #endif
 PETSC_EXTERN void PETSC_STDCALL  epspowersetshifttype_(EPS *eps,EPSPowerShiftType *shift, int *__ierr ){
 *__ierr = EPSPowerSetShiftType(*eps,*shift);
+}
+PETSC_EXTERN void PETSC_STDCALL  epspowergetshifttype_(EPS *eps,EPSPowerShiftType *shift, int *__ierr ){
+*__ierr = EPSPowerGetShiftType(*eps,
+	(EPSPowerShiftType* )PetscToPointer((shift) ));
 }
 #if defined(__cplusplus)
 }

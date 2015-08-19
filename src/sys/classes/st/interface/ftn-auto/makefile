@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = stfuncf.c stsetf.c stslesf.c stsolvef.c
+SOURCEC  = stfuncf.c stsolvef.c stsetf.c stslesf.c
 SOURCEF  =
 SOURCEH  = 
 DIRS     =
 LIBBASE  = libslepcsys
 LOCDIR   = src/sys/classes/st/interface/ftn-auto/
-include ${SLEPC_DIR}/conf/slepc_common
+include ${SLEPC_DIR}/lib/slepc/conf/slepc_common

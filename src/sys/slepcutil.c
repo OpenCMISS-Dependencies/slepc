@@ -1,7 +1,7 @@
 /*
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -19,7 +19,7 @@
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
 
-#include <slepc-private/slepcimpl.h>            /*I "slepcsys.h" I*/
+#include <slepc/private/slepcimpl.h>            /*I "slepcsys.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SlepcVecNormalize"
@@ -460,7 +460,7 @@ PetscErrorCode SlepcMatTile(PetscScalar a,Mat A,PetscScalar b,Mat B,PetscScalar 
 
 #undef __FUNCT__
 #define __FUNCT__ "SlepcCheckOrthogonality"
-/*@
+/*@C
    SlepcCheckOrthogonality - Checks (or prints) the level of orthogonality
    of a set of vectors.
 
@@ -644,9 +644,9 @@ PetscErrorCode SlepcSNPrintfScalar(char *str,size_t len,PetscScalar val,PetscBoo
   im = PetscImaginaryPart(val);
   if (im!=0.0) {
     if (exp) {
-      ierr = PetscSNPrintf(str,len,"+(%g%+g i)",(double)re,(double)im);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(str,len,"+(%g%+gi)",(double)re,(double)im);CHKERRQ(ierr);
     } else {
-      ierr = PetscSNPrintf(str,len,"%g%+g i",(double)re,(double)im);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(str,len,"%g%+gi",(double)re,(double)im);CHKERRQ(ierr);
     }
   } else {
     if (exp) {

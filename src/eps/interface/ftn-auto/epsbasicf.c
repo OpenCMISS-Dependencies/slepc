@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* epsbasic.c */
 /* Fortran interface file */
 
@@ -22,21 +22,26 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
 #include "slepceps.h"
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define epsprintsolution_ EPSPRINTSOLUTION
+#define epscreate_ EPSCREATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define epsprintsolution_ epsprintsolution
+#define epscreate_ epscreate
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define epsreset_ EPSRESET
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define epsreset_ epsreset
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epsdestroy_ EPSDESTROY
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epsdestroy_ epsdestroy
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define epssettarget_ EPSSETTARGET
@@ -64,9 +69,19 @@ extern void PetscRmPointer(void*);
 #define epssetst_ epssetst
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epsgetst_ EPSGETST
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epsgetst_ epsgetst
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define epssetbv_ EPSSETBV
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define epssetbv_ epssetbv
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epsgetbv_ EPSGETBV
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epsgetbv_ epsgetbv
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define epssetrg_ EPSSETRG
@@ -74,9 +89,19 @@ extern void PetscRmPointer(void*);
 #define epssetrg_ epssetrg
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epsgetrg_ EPSGETRG
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epsgetrg_ epsgetrg
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define epssetds_ EPSSETDS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define epssetds_ epssetds
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epsgetds_ EPSGETDS
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epsgetds_ epsgetds
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define epsisgeneralized_ EPSISGENERALIZED
@@ -99,12 +124,17 @@ extern void PetscRmPointer(void*);
 #if defined(__cplusplus)
 extern "C" {
 #endif
-PETSC_EXTERN void PETSC_STDCALL  epsprintsolution_(EPS *eps,PetscViewer viewer, int *__ierr ){
-*__ierr = EPSPrintSolution(*eps,
-	(PetscViewer)PetscToPointer((viewer) ));
+PETSC_EXTERN void PETSC_STDCALL  epscreate_(MPI_Fint * comm,EPS *outeps, int *__ierr ){
+*__ierr = EPSCreate(
+	MPI_Comm_f2c( *(comm) ),
+	(EPS* )PetscToPointer((outeps) ));
 }
 PETSC_EXTERN void PETSC_STDCALL  epsreset_(EPS *eps, int *__ierr ){
 *__ierr = EPSReset(*eps);
+}
+PETSC_EXTERN void PETSC_STDCALL  epsdestroy_(EPS *eps, int *__ierr ){
+*__ierr = EPSDestroy(
+	(EPS* )PetscToPointer((eps) ));
 }
 PETSC_EXTERN void PETSC_STDCALL  epssettarget_(EPS *eps,PetscScalar *target, int *__ierr ){
 *__ierr = EPSSetTarget(*eps,*target);
@@ -121,14 +151,30 @@ PETSC_EXTERN void PETSC_STDCALL  epsgetinterval_(EPS *eps,PetscReal* inta,PetscR
 PETSC_EXTERN void PETSC_STDCALL  epssetst_(EPS *eps,ST *st, int *__ierr ){
 *__ierr = EPSSetST(*eps,*st);
 }
+PETSC_EXTERN void PETSC_STDCALL  epsgetst_(EPS *eps,ST *st, int *__ierr ){
+*__ierr = EPSGetST(*eps,
+	(ST* )PetscToPointer((st) ));
+}
 PETSC_EXTERN void PETSC_STDCALL  epssetbv_(EPS *eps,BV *V, int *__ierr ){
 *__ierr = EPSSetBV(*eps,*V);
+}
+PETSC_EXTERN void PETSC_STDCALL  epsgetbv_(EPS *eps,BV *V, int *__ierr ){
+*__ierr = EPSGetBV(*eps,
+	(BV* )PetscToPointer((V) ));
 }
 PETSC_EXTERN void PETSC_STDCALL  epssetrg_(EPS *eps,RG *rg, int *__ierr ){
 *__ierr = EPSSetRG(*eps,*rg);
 }
+PETSC_EXTERN void PETSC_STDCALL  epsgetrg_(EPS *eps,RG *rg, int *__ierr ){
+*__ierr = EPSGetRG(*eps,
+	(RG* )PetscToPointer((rg) ));
+}
 PETSC_EXTERN void PETSC_STDCALL  epssetds_(EPS *eps,DS *ds, int *__ierr ){
 *__ierr = EPSSetDS(*eps,*ds);
+}
+PETSC_EXTERN void PETSC_STDCALL  epsgetds_(EPS *eps,DS *ds, int *__ierr ){
+*__ierr = EPSGetDS(*eps,
+	(DS* )PetscToPointer((ds) ));
 }
 PETSC_EXTERN void PETSC_STDCALL  epsisgeneralized_(EPS *eps,PetscBool* is, int *__ierr ){
 *__ierr = EPSIsGeneralized(*eps,is);

@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* arnoldi.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -33,6 +33,11 @@ extern void PetscRmPointer(void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define epsarnoldisetdelayed_ epsarnoldisetdelayed
 #endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epsarnoldigetdelayed_ EPSARNOLDIGETDELAYED
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epsarnoldigetdelayed_ epsarnoldigetdelayed
+#endif
 
 
 /* Definitions of Fortran Wrapper routines */
@@ -41,6 +46,9 @@ extern "C" {
 #endif
 PETSC_EXTERN void PETSC_STDCALL  epsarnoldisetdelayed_(EPS *eps,PetscBool *delayed, int *__ierr ){
 *__ierr = EPSArnoldiSetDelayed(*eps,*delayed);
+}
+PETSC_EXTERN void PETSC_STDCALL  epsarnoldigetdelayed_(EPS *eps,PetscBool *delayed, int *__ierr ){
+*__ierr = EPSArnoldiGetDelayed(*eps,delayed);
 }
 #if defined(__cplusplus)
 }

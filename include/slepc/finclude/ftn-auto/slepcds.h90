@@ -1,0 +1,193 @@
+        subroutine DSPEPSetDegree(ds, d ,ierr)
+       DS ds ! DS
+       PetscInt d ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSPEPGetDegree(ds, d ,ierr)
+       DS ds ! DS
+       PetscInt d ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSNEPSetFN(ds, n, fn ,ierr)
+       DS ds ! DS
+       PetscInt n ! PetscInt
+       FN fn (*) ! FN
+       integer ierr
+       end subroutine
+        subroutine DSNEPGetFN(ds, k, fn ,ierr)
+       DS ds ! DS
+       PetscInt k ! PetscInt
+       FN fn ! FN
+       integer ierr
+       end subroutine
+        subroutine DSNEPGetNumFN(ds, n ,ierr)
+       DS ds ! DS
+       PetscInt n ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSCreate(comm, newds ,ierr)
+       integer comm ! MPI_Comm
+       DS newds ! DS
+       integer ierr
+       end subroutine
+        subroutine DSSetMethod(ds, meth ,ierr)
+       DS ds ! DS
+       PetscInt meth ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSGetMethod(ds, meth ,ierr)
+       DS ds ! DS
+       PetscInt meth ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSSetCompact(ds, comp ,ierr)
+       DS ds ! DS
+       PetscBool comp ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine DSGetCompact(ds, comp ,ierr)
+       DS ds ! DS
+       PetscBool comp ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine DSSetExtraRow(ds, ext ,ierr)
+       DS ds ! DS
+       PetscBool ext ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine DSGetExtraRow(ds, ext ,ierr)
+       DS ds ! DS
+       PetscBool ext ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine DSSetRefined(ds, ref ,ierr)
+       DS ds ! DS
+       PetscBool ref ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine DSGetRefined(ds, ref ,ierr)
+       DS ds ! DS
+       PetscBool ref ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine DSSetBlockSize(ds, bs ,ierr)
+       DS ds ! DS
+       PetscInt bs ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSGetBlockSize(ds, bs ,ierr)
+       DS ds ! DS
+       PetscInt bs ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSSetFromOptions(ds ,ierr)
+       DS ds ! DS
+       integer ierr
+       end subroutine
+        subroutine DSAllocate(ds, ld ,ierr)
+       DS ds ! DS
+       PetscInt ld ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSReset(ds ,ierr)
+       DS ds ! DS
+       integer ierr
+       end subroutine
+        subroutine DSDestroy(ds ,ierr)
+       DS ds ! DS
+       integer ierr
+       end subroutine
+        subroutine DSGetLeadingDimension(ds, ld ,ierr)
+       DS ds ! DS
+       PetscInt ld ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSSetState(ds, state ,ierr)
+       DS ds ! DS
+       DSStateType state ! DSStateType
+       integer ierr
+       end subroutine
+        subroutine DSGetState(ds, state ,ierr)
+       DS ds ! DS
+       DSStateType state ! DSStateType
+       integer ierr
+       end subroutine
+        subroutine DSSetDimensions(ds, n, m, l, k ,ierr)
+       DS ds ! DS
+       PetscInt n ! PetscInt
+       PetscInt m ! PetscInt
+       PetscInt l ! PetscInt
+       PetscInt k ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSGetDimensions(ds, n, m, l, k, t ,ierr)
+       DS ds ! DS
+       PetscInt n ! PetscInt
+       PetscInt m ! PetscInt
+       PetscInt l ! PetscInt
+       PetscInt k ! PetscInt
+       PetscInt t ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSTruncate(ds, n ,ierr)
+       DS ds ! DS
+       PetscInt n ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSGetMat(ds, m, A ,ierr)
+       DS ds ! DS
+       DSMatType m ! DSMatType
+       Mat A ! Mat
+       integer ierr
+       end subroutine
+        subroutine DSRestoreMat(ds, m, A ,ierr)
+       DS ds ! DS
+       DSMatType m ! DSMatType
+       Mat A ! Mat
+       integer ierr
+       end subroutine
+        subroutine DSSolve(ds, eigr, eigi ,ierr)
+       DS ds ! DS
+       PetscScalar eigr ! PetscScalar
+       PetscScalar eigi ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine DSNormalize(ds, mat, col ,ierr)
+       DS ds ! DS
+       DSMatType mat ! DSMatType
+       PetscInt col ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DSUpdateExtraRow(ds ,ierr)
+       DS ds ! DS
+       integer ierr
+       end subroutine
+        subroutine DSCond(ds, cond ,ierr)
+       DS ds ! DS
+       PetscReal cond ! PetscReal
+       integer ierr
+       end subroutine
+        subroutine DSTranslateRKS(ds, alpha ,ierr)
+       DS ds ! DS
+       PetscScalar alpha ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine DSCopyMat(ds, m, mr, mc, A, Ar, Ac, rows, cols, out ,&
+     &ierr)
+       DS ds ! DS
+       DSMatType m ! DSMatType
+       PetscInt mr ! PetscInt
+       PetscInt mc ! PetscInt
+       Mat A ! Mat
+       PetscInt Ar ! PetscInt
+       PetscInt Ac ! PetscInt
+       PetscInt rows ! PetscInt
+       PetscInt cols ! PetscInt
+       PetscBool out ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine DSSetIdentity(ds, mat ,ierr)
+       DS ds ! DS
+       DSMatType mat ! DSMatType
+       integer ierr
+       end subroutine

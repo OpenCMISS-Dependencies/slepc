@@ -3,7 +3,7 @@
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -21,7 +21,7 @@
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
 
-#include <slepc-private/epsimpl.h>       /*I "slepceps.h" I*/
+#include <slepc/private/epsimpl.h>       /*I "slepceps.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "EPSSetUp"
@@ -40,7 +40,7 @@
    calls it. It can be useful when one wants to measure the set-up time
    separately from the solve time.
 
-   Level: advanced
+   Level: developer
 
 .seealso: EPSCreate(), EPSSolve(), EPSDestroy(), STSetUp(), EPSSetInitialSpace()
 @*/
@@ -72,6 +72,7 @@ PetscErrorCode EPSSetUp(EPS eps)
     ierr = PetscObjectTypeCompareAny((PetscObject)eps,&flg,EPSGD,EPSJD,EPSRQCG,EPSBLOPEX,EPSPRIMME,"");CHKERRQ(ierr);
     ierr = STSetType(eps->st,flg?STPRECOND:STSHIFT);CHKERRQ(ierr);
   }
+  ierr = STSetTransform(eps->st,PETSC_TRUE);CHKERRQ(ierr);
   if (!eps->ds) { ierr = EPSGetDS(eps,&eps->ds);CHKERRQ(ierr); }
   ierr = DSReset(eps->ds);CHKERRQ(ierr);
   if (!eps->rg) { ierr = EPSGetRG(eps,&eps->rg);CHKERRQ(ierr); }
@@ -194,7 +195,7 @@ PetscErrorCode EPSSetUp(EPS eps)
   /* Build balancing matrix if required */
   if (!eps->ishermitian && (eps->balance==EPS_BALANCE_ONESIDE || eps->balance==EPS_BALANCE_TWOSIDE)) {
     if (!eps->D) {
-      ierr = BVGetVec(eps->V,&eps->D);CHKERRQ(ierr);
+      ierr = BVCreateVec(eps->V,&eps->D);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)eps,(PetscObject)eps->D);CHKERRQ(ierr);
     } else {
       ierr = VecSet(eps->D,1.0);CHKERRQ(ierr);
@@ -249,7 +250,7 @@ PetscErrorCode EPSSetUp(EPS eps)
    Notes:
    To specify a standard eigenproblem, use NULL for parameter B.
 
-   It must be called after EPSSetUp(). If it is called again after EPSSetUp() then
+   It must be called before EPSSetUp(). If it is called again after EPSSetUp() then
    the EPS object is reset.
 
    Level: beginner
@@ -292,7 +293,7 @@ PetscErrorCode EPSSetOperators(EPS eps,Mat A,Mat B)
 
 #undef __FUNCT__
 #define __FUNCT__ "EPSGetOperators"
-/*@C
+/*@
    EPSGetOperators - Gets the matrices associated with the eigensystem.
 
    Collective on EPS and Mat
@@ -479,7 +480,7 @@ PetscErrorCode EPSAllocateSolution(EPS eps,PetscInt extra)
   newc = PetscMax(0,requested-oldsize);
 
   /* allocate space for eigenvalues and friends */
-  if (requested != oldsize) {
+  if (requested != oldsize || !eps->eigr) {
     if (oldsize) {
       ierr = PetscFree4(eps->eigr,eps->eigi,eps->errest,eps->perm);CHKERRQ(ierr);
     }
@@ -503,7 +504,7 @@ PetscErrorCode EPSAllocateSolution(EPS eps,PetscInt extra)
     if (!((PetscObject)(eps->V))->type_name) {
       ierr = BVSetType(eps->V,BVSVEC);CHKERRQ(ierr);
     }
-    ierr = STMatGetVecs(eps->st,&t,NULL);CHKERRQ(ierr);
+    ierr = STMatCreateVecs(eps->st,&t,NULL);CHKERRQ(ierr);
     ierr = BVSetSizesFromVec(eps->V,t,requested);CHKERRQ(ierr);
     ierr = VecDestroy(&t);CHKERRQ(ierr);
   } else {

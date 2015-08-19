@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* epssetup.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -37,6 +37,11 @@ extern void PetscRmPointer(void*);
 #define epssetoperators_ EPSSETOPERATORS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define epssetoperators_ epssetoperators
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epsgetoperators_ EPSGETOPERATORS
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epsgetoperators_ epsgetoperators
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define epssetdeflationspace_ EPSSETDEFLATIONSPACE
@@ -66,6 +71,9 @@ PETSC_EXTERN void PETSC_STDCALL  epssetoperators_(EPS *eps,Mat A,Mat B, int *__i
 *__ierr = EPSSetOperators(*eps,
 	(Mat)PetscToPointer((A) ),
 	(Mat)PetscToPointer((B) ));
+}
+PETSC_EXTERN void PETSC_STDCALL  epsgetoperators_(EPS *eps,Mat *A,Mat *B, int *__ierr ){
+*__ierr = EPSGetOperators(*eps,A,B);
 }
 PETSC_EXTERN void PETSC_STDCALL  epssetdeflationspace_(EPS *eps,PetscInt *n,Vec *v, int *__ierr ){
 *__ierr = EPSSetDeflationSpace(*eps,*n,v);

@@ -13,11 +13,11 @@
    References:
 
        [1] "Lanczos Methods in SLEPc", SLEPc Technical Report STR-5,
-           available at http://www.grycap.upv.es/slepc.
+           available at http://slepc.upv.es.
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -35,7 +35,7 @@
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
 
-#include <slepc-private/epsimpl.h>                /*I "slepceps.h" I*/
+#include <slepc/private/epsimpl.h>                /*I "slepceps.h" I*/
 #include <slepcblaslapack.h>
 
 PetscErrorCode EPSSolve_Lanczos(EPS);
@@ -51,6 +51,7 @@ PetscErrorCode EPSSetUp_Lanczos(EPS eps)
 {
   EPS_LANCZOS        *lanczos = (EPS_LANCZOS*)eps->data;
   BVOrthogRefineType refine;
+  BVOrthogBlockType  btype;
   PetscReal          eta;
   PetscErrorCode     ierr;
 
@@ -74,8 +75,8 @@ PetscErrorCode EPSSetUp_Lanczos(EPS eps)
   ierr = EPSAllocateSolution(eps,1);CHKERRQ(ierr);
   ierr = EPS_SetInnerProduct(eps);CHKERRQ(ierr);
   if (lanczos->reorthog != EPS_LANCZOS_REORTHOG_FULL) {
-    ierr = BVGetOrthogonalization(eps->V,NULL,&refine,&eta);CHKERRQ(ierr);
-    ierr = BVSetOrthogonalization(eps->V,BV_ORTHOG_MGS,refine,eta);CHKERRQ(ierr);
+    ierr = BVGetOrthogonalization(eps->V,NULL,&refine,&eta,&btype);CHKERRQ(ierr);
+    ierr = BVSetOrthogonalization(eps->V,BV_ORTHOG_MGS,refine,eta,btype);CHKERRQ(ierr);
     ierr = PetscInfo(eps,"Switching to MGS orthogonalization\n");CHKERRQ(ierr);
   }
   if (lanczos->reorthog == EPS_LANCZOS_REORTHOG_SELECTIVE) {
@@ -445,7 +446,7 @@ static PetscErrorCode EPSPartialLanczos(EPS eps,PetscReal *alpha,PetscReal *beta
       if (j>k) {
         update_omega(omega,omega_old,j,alpha,beta-1,eps1,anorm);
         for (i=0;i<j-k;i++) {
-          if (PetscAbsScalar(omega[i]) > delta) reorth = PETSC_TRUE;
+          if (PetscAbsReal(omega[i]) > delta) reorth = PETSC_TRUE;
         }
       }
       if (reorth || force_reorth) {
@@ -512,12 +513,10 @@ static PetscErrorCode EPSBasicLanczos(EPS eps,PetscReal *alpha,PetscReal *beta,P
 {
   PetscErrorCode     ierr;
   EPS_LANCZOS        *lanczos = (EPS_LANCZOS*)eps->data;
-  /*
   PetscScalar        *T;
   PetscInt           i,n=*m;
   PetscReal          betam;
   BVOrthogRefineType orthog_ref;
-  */
 
   PetscFunctionBegin;
   switch (lanczos->reorthog) {
@@ -535,14 +534,12 @@ static PetscErrorCode EPSBasicLanczos(EPS eps,PetscReal *alpha,PetscReal *beta,P
       ierr = EPSPartialLanczos(eps,alpha,beta,k,m,breakdown,anorm);CHKERRQ(ierr);
       break;
     case EPS_LANCZOS_REORTHOG_DELAYED:
-      SETERRQ(PetscObjectComm((PetscObject)eps),1,"Not implemented");
-      /*
       ierr = PetscMalloc1(n*n,&T);CHKERRQ(ierr);
-      ierr = BVGetOrthogonalization(eps->ip,NULL,&orthog_ref,NULL);CHKERRQ(ierr);
+      ierr = BVGetOrthogonalization(eps->V,NULL,&orthog_ref,NULL,NULL);CHKERRQ(ierr);
       if (orthog_ref == BV_ORTHOG_REFINE_NEVER) {
-        ierr = EPSDelayedArnoldi1(eps,T,n,V,k,m,f,&betam,breakdown);CHKERRQ(ierr);
+        ierr = EPSDelayedArnoldi1(eps,T,n,k,m,&betam,breakdown);CHKERRQ(ierr);
       } else {
-        ierr = EPSDelayedArnoldi(eps,T,n,V,k,m,f,&betam,breakdown);CHKERRQ(ierr);
+        ierr = EPSDelayedArnoldi(eps,T,n,k,m,&betam,breakdown);CHKERRQ(ierr);
       }
       for (i=k;i<n-1;i++) {
         alpha[i] = PetscRealPart(T[n*i+i]);
@@ -552,7 +549,6 @@ static PetscErrorCode EPSBasicLanczos(EPS eps,PetscReal *alpha,PetscReal *beta,P
       beta[n-1] = betam;
       ierr = PetscFree(T);CHKERRQ(ierr);
       break;
-      */
     default:
       SETERRQ(PetscObjectComm((PetscObject)eps),PETSC_ERR_ARG_OUTOFRANGE,"Invalid reorthogonalization type");
   }
@@ -750,7 +746,7 @@ PetscErrorCode EPSSolve_Lanczos(EPS eps)
 
 #undef __FUNCT__
 #define __FUNCT__ "EPSSetFromOptions_Lanczos"
-PetscErrorCode EPSSetFromOptions_Lanczos(EPS eps)
+PetscErrorCode EPSSetFromOptions_Lanczos(PetscOptions *PetscOptionsObject,EPS eps)
 {
   PetscErrorCode         ierr;
   EPS_LANCZOS            *lanczos = (EPS_LANCZOS*)eps->data;
@@ -758,7 +754,7 @@ PetscErrorCode EPSSetFromOptions_Lanczos(EPS eps)
   EPSLanczosReorthogType reorthog;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("EPS Lanczos Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"EPS Lanczos Options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-eps_lanczos_reorthog","Lanczos reorthogonalization","EPSLanczosSetReorthog",EPSLanczosReorthogTypes,(PetscEnum)lanczos->reorthog,(PetscEnum*)&reorthog,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = EPSLanczosSetReorthog(eps,reorthog);CHKERRQ(ierr);
@@ -833,9 +829,9 @@ static PetscErrorCode EPSLanczosGetReorthog_Lanczos(EPS eps,EPSLanczosReorthogTy
 
 #undef __FUNCT__
 #define __FUNCT__ "EPSLanczosGetReorthog"
-/*@C
-   EPSLanczosGetReorthog - Gets the type of reorthogonalization used during the Lanczos
-   iteration.
+/*@
+   EPSLanczosGetReorthog - Gets the type of reorthogonalization used during
+   the Lanczos iteration.
 
    Not Collective
 

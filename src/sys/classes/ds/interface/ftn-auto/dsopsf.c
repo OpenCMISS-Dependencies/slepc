@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* dsops.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -74,24 +74,29 @@ extern void PetscRmPointer(void*);
 #define dssolve_ dssolve
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dscomputefunction_ DSCOMPUTEFUNCTION
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dscomputefunction_ dscomputefunction
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dssort_ DSSORT
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dssort_ dssort
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dsvectors_ DSVECTORS
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dsvectors_ dsvectors
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dsnormalize_ DSNORMALIZE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dsnormalize_ dsnormalize
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dsupdateextrarow_ DSUPDATEEXTRAROW
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define dsupdateextrarow_ dsupdateextrarow
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dscond_ DSCOND
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define dscond_ dscond
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dstranslaterks_ DSTRANSLATERKS
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define dstranslaterks_ dstranslaterks
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dscopymat_ DSCOPYMAT
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define dscopymat_ dscopymat
 #endif
 
 
@@ -127,17 +132,21 @@ PETSC_EXTERN void PETSC_STDCALL  dsrestoremat_(DS *ds,DSMatType *m,Mat *A, int *
 PETSC_EXTERN void PETSC_STDCALL  dssolve_(DS *ds,PetscScalar *eigr,PetscScalar *eigi, int *__ierr ){
 *__ierr = DSSolve(*ds,eigr,eigi);
 }
-PETSC_EXTERN void PETSC_STDCALL  dscomputefunction_(DS *ds,SlepcFunction *f, int *__ierr ){
-*__ierr = DSComputeFunction(*ds,*f);
-}
-PETSC_EXTERN void PETSC_STDCALL  dssort_(DS *ds,PetscScalar *eigr,PetscScalar *eigi,PetscScalar *rr,PetscScalar *ri,PetscInt *k, int *__ierr ){
-*__ierr = DSSort(*ds,eigr,eigi,rr,ri,k);
-}
-PETSC_EXTERN void PETSC_STDCALL  dsvectors_(DS *ds,DSMatType *mat,PetscInt *j,PetscReal *rnorm, int *__ierr ){
-*__ierr = DSVectors(*ds,*mat,j,rnorm);
-}
 PETSC_EXTERN void PETSC_STDCALL  dsnormalize_(DS *ds,DSMatType *mat,PetscInt *col, int *__ierr ){
 *__ierr = DSNormalize(*ds,*mat,*col);
+}
+PETSC_EXTERN void PETSC_STDCALL  dsupdateextrarow_(DS *ds, int *__ierr ){
+*__ierr = DSUpdateExtraRow(*ds);
+}
+PETSC_EXTERN void PETSC_STDCALL  dscond_(DS *ds,PetscReal *cond, int *__ierr ){
+*__ierr = DSCond(*ds,cond);
+}
+PETSC_EXTERN void PETSC_STDCALL  dstranslaterks_(DS *ds,PetscScalar *alpha, int *__ierr ){
+*__ierr = DSTranslateRKS(*ds,*alpha);
+}
+PETSC_EXTERN void PETSC_STDCALL  dscopymat_(DS *ds,DSMatType *m,PetscInt *mr,PetscInt *mc,Mat A,PetscInt *Ar,PetscInt *Ac,PetscInt *rows,PetscInt *cols,PetscBool *out, int *__ierr ){
+*__ierr = DSCopyMat(*ds,*m,*mr,*mc,
+	(Mat)PetscToPointer((A) ),*Ar,*Ac,*rows,*cols,*out);
 }
 #if defined(__cplusplus)
 }

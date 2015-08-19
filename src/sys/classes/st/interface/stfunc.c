@@ -3,7 +3,7 @@
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -21,7 +21,7 @@
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
 
-#include <slepc-private/stimpl.h>            /*I "slepcst.h" I*/
+#include <slepc/private/stimpl.h>            /*I "slepcst.h" I*/
 
 PetscClassId     ST_CLASSID = 0;
 PetscLogEvent    ST_SetUp = 0,ST_Apply = 0,ST_ApplyTranspose = 0,ST_MatSetUp = 0,ST_MatMult = 0,ST_MatMultTranspose = 0,ST_MatSolve = 0,ST_MatSolveTranspose = 0;
@@ -127,14 +127,13 @@ PetscErrorCode STReset(ST st)
   ierr = MatDestroyMatrices(PetscMax(2,st->nmat),&st->T);CHKERRQ(ierr);
   ierr = VecDestroy(&st->w);CHKERRQ(ierr);
   ierr = VecDestroy(&st->wb);CHKERRQ(ierr);
-  ierr = STResetOperationCounters(st);CHKERRQ(ierr);
   st->setupcalled = 0;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "STDestroy"
-/*@C
+/*@
    STDestroy - Destroys ST context that was created with STCreate().
 
    Collective on ST
@@ -167,7 +166,7 @@ PetscErrorCode STDestroy(ST *st)
 
 #undef __FUNCT__
 #define __FUNCT__ "STCreate"
-/*@C
+/*@
    STCreate - Creates a spectral transformation context.
 
    Collective on MPI_Comm
@@ -191,7 +190,7 @@ PetscErrorCode STCreate(MPI_Comm comm,ST *newst)
   PetscValidPointer(newst,2);
   *newst = 0;
   ierr = STInitializePackage();CHKERRQ(ierr);
-  ierr = SlepcHeaderCreate(st,_p_ST,struct _STOps,ST_CLASSID,"ST","Spectral Transformation","ST",comm,STDestroy,STView);CHKERRQ(ierr);
+  ierr = SlepcHeaderCreate(st,ST_CLASSID,"ST","Spectral Transformation","ST",comm,STDestroy,STView);CHKERRQ(ierr);
 
   st->A            = NULL;
   st->Astate       = NULL;
@@ -209,8 +208,6 @@ PetscErrorCode STCreate(MPI_Comm comm,ST *newst)
   st->w            = NULL;
   st->D            = NULL;
   st->wb           = NULL;
-  st->linearits    = 0;
-  st->applys       = 0;
   st->data         = NULL;
   st->setupcalled  = 0;
 
@@ -254,7 +251,7 @@ PetscErrorCode STSetOperators(ST st,PetscInt n,Mat A[])
   ierr = PetscMalloc(PetscMax(2,n)*sizeof(Mat),&st->A);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)st,PetscMax(2,n)*sizeof(Mat));CHKERRQ(ierr);
   ierr = PetscFree(st->Astate);CHKERRQ(ierr);
-  ierr = PetscMalloc(PetscMax(2,n)*sizeof(PetscInt),&st->Astate);CHKERRQ(ierr);
+  ierr = PetscMalloc(PetscMax(2,n)*sizeof(PetscObjectState),&st->Astate);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)st,PetscMax(2,n)*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0;i<n;i++) {
     PetscValidHeaderSpecific(A[i],MAT_CLASSID,3);
@@ -376,9 +373,9 @@ PetscErrorCode STGetNumMatrices(ST st,PetscInt *n)
    This function is normally not directly called by users, since the shift is
    indirectly set by EPSSetTarget().
 
-   Level: advanced
+   Level: intermediate
 
-.seealso: EPSSetTarget()
+.seealso: EPSSetTarget(), STGetShift(), STSetDefaultShift()
 @*/
 PetscErrorCode STSetShift(ST st,PetscScalar shift)
 {
@@ -387,7 +384,6 @@ PetscErrorCode STSetShift(ST st,PetscScalar shift)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(st,ST_CLASSID,1);
   PetscValidLogicalCollectiveScalar(st,shift,2);
-  PetscValidType(st,1);
   if (st->sigma != shift) {
     if (st->ops->setshift) {
       ierr = (*st->ops->setshift)(st,shift);CHKERRQ(ierr);
@@ -411,8 +407,9 @@ PetscErrorCode STSetShift(ST st,PetscScalar shift)
    Output Parameter:
 .  shift - the value of the shift
 
-   Level: beginner
+   Level: intermediate
 
+.seealso: STSetShift()
 @*/
 PetscErrorCode STGetShift(ST st,PetscScalar* shift)
 {
@@ -437,6 +434,7 @@ PetscErrorCode STGetShift(ST st,PetscScalar* shift)
 
    Level: developer
 
+.seealso: STSetShift()
 @*/
 PetscErrorCode STSetDefaultShift(ST st,PetscScalar defaultshift)
 {
@@ -444,6 +442,34 @@ PetscErrorCode STSetDefaultShift(ST st,PetscScalar defaultshift)
   PetscValidHeaderSpecific(st,ST_CLASSID,1);
   PetscValidLogicalCollectiveScalar(st,defaultshift,2);
   st->defsigma = defaultshift;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "STScaleShift"
+/*@
+   STScaleShift - Multiply the shift with a given factor.
+
+   Logically Collective on ST
+
+   Input Parameters:
++  st     - the spectral transformation context
+-  factor - the scaling factor
+
+   Note:
+   This function does not update the transformation matrices, as opposed to
+   STSetShift().
+
+   Level: developer
+
+.seealso: STSetShift()
+@*/
+PetscErrorCode STScaleShift(ST st,PetscScalar factor)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(st,ST_CLASSID,1);
+  PetscValidLogicalCollectiveScalar(st,factor,2);
+  st->sigma *= factor;
   PetscFunctionReturn(0);
 }
 
@@ -513,9 +539,9 @@ PetscErrorCode STGetBalanceMatrix(ST st,Vec *D)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "STMatGetVecs"
+#define __FUNCT__ "STMatCreateVecs"
 /*@C
-   STMatGetVecs - Get vector(s) compatible with the ST matrices.
+   STMatCreateVecs - Get vector(s) compatible with the ST matrices.
 
    Collective on ST
 
@@ -528,13 +554,13 @@ PetscErrorCode STGetBalanceMatrix(ST st,Vec *D)
 
    Level: developer
 @*/
-PetscErrorCode STMatGetVecs(ST st,Vec *right,Vec *left)
+PetscErrorCode STMatCreateVecs(ST st,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   STCheckMatrices(st,1);
-  ierr = MatGetVecs(st->A[0],right,left);CHKERRQ(ierr);
+  ierr = MatCreateVecs(st->A[0],right,left);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -761,7 +787,7 @@ PetscErrorCode STView(ST st,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer,"  all matrices have %s\n",pat);CHKERRQ(ierr);
     }
-    if (st->transform) {
+    if (st->transform && st->nmat>2) {
       ierr = PetscViewerASCIIPrintf(viewer,"  computing transformed matrices\n");CHKERRQ(ierr);
     }
   } else if (isstring) {

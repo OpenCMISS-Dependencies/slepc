@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* bvfunc.c */
 /* Fortran interface file */
 
@@ -22,12 +22,22 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
 #include "slepcbv.h"
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define bvdestroy_ BVDESTROY
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define bvdestroy_ bvdestroy
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define bvcreate_ BVCREATE
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define bvcreate_ bvcreate
+#endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define bvinsertvec_ BVINSERTVEC
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
@@ -49,6 +59,15 @@ extern void PetscRmPointer(void*);
 #if defined(__cplusplus)
 extern "C" {
 #endif
+PETSC_EXTERN void PETSC_STDCALL  bvdestroy_(BV *bv, int *__ierr ){
+*__ierr = BVDestroy(
+	(BV* )PetscToPointer((bv) ));
+}
+PETSC_EXTERN void PETSC_STDCALL  bvcreate_(MPI_Fint * comm,BV *newbv, int *__ierr ){
+*__ierr = BVCreate(
+	MPI_Comm_f2c( *(comm) ),
+	(BV* )PetscToPointer((newbv) ));
+}
 PETSC_EXTERN void PETSC_STDCALL  bvinsertvec_(BV *V,PetscInt *j,Vec w, int *__ierr ){
 *__ierr = BVInsertVec(*V,*j,
 	(Vec)PetscToPointer((w) ));

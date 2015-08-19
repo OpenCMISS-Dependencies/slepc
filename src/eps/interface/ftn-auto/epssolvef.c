@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* epssolve.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -42,6 +42,11 @@ extern void PetscRmPointer(void*);
 #define epsgetconverged_ EPSGETCONVERGED
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define epsgetconverged_ epsgetconverged
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epsgetconvergedreason_ EPSGETCONVERGEDREASON
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epsgetconvergedreason_ epsgetconvergedreason
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define epsgetinvariantsubspace_ EPSGETINVARIANTSUBSPACE
@@ -69,14 +74,9 @@ extern void PetscRmPointer(void*);
 #define epsgeterrorestimate_ epsgeterrorestimate
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define epscomputeresidualnorm_ EPSCOMPUTERESIDUALNORM
+#define epscomputeerror_ EPSCOMPUTEERROR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define epscomputeresidualnorm_ epscomputeresidualnorm
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define epscomputerelativeerror_ EPSCOMPUTERELATIVEERROR
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define epscomputerelativeerror_ epscomputerelativeerror
+#define epscomputeerror_ epscomputeerror
 #endif
 
 
@@ -92,6 +92,10 @@ PETSC_EXTERN void PETSC_STDCALL  epsgetiterationnumber_(EPS *eps,PetscInt *its, 
 }
 PETSC_EXTERN void PETSC_STDCALL  epsgetconverged_(EPS *eps,PetscInt *nconv, int *__ierr ){
 *__ierr = EPSGetConverged(*eps,nconv);
+}
+PETSC_EXTERN void PETSC_STDCALL  epsgetconvergedreason_(EPS *eps,EPSConvergedReason *reason, int *__ierr ){
+*__ierr = EPSGetConvergedReason(*eps,
+	(EPSConvergedReason* )PetscToPointer((reason) ));
 }
 PETSC_EXTERN void PETSC_STDCALL  epsgetinvariantsubspace_(EPS *eps,Vec *v, int *__ierr ){
 *__ierr = EPSGetInvariantSubspace(*eps,v);
@@ -112,11 +116,8 @@ PETSC_EXTERN void PETSC_STDCALL  epsgeteigenvector_(EPS *eps,PetscInt *i,Vec Vr,
 PETSC_EXTERN void PETSC_STDCALL  epsgeterrorestimate_(EPS *eps,PetscInt *i,PetscReal *errest, int *__ierr ){
 *__ierr = EPSGetErrorEstimate(*eps,*i,errest);
 }
-PETSC_EXTERN void PETSC_STDCALL  epscomputeresidualnorm_(EPS *eps,PetscInt *i,PetscReal *norm, int *__ierr ){
-*__ierr = EPSComputeResidualNorm(*eps,*i,norm);
-}
-PETSC_EXTERN void PETSC_STDCALL  epscomputerelativeerror_(EPS *eps,PetscInt *i,PetscReal *error, int *__ierr ){
-*__ierr = EPSComputeRelativeError(*eps,*i,error);
+PETSC_EXTERN void PETSC_STDCALL  epscomputeerror_(EPS *eps,PetscInt *i,EPSErrorType *type,PetscReal *error, int *__ierr ){
+*__ierr = EPSComputeError(*eps,*i,*type,error);
 }
 #if defined(__cplusplus)
 }

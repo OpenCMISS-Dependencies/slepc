@@ -1,7 +1,7 @@
 /*
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -51,22 +51,21 @@ int main(int argc,char **argv)
   ierr = FNCreate(PETSC_COMM_WORLD,&f1);CHKERRQ(ierr);
   ierr = FNSetType(f1,FNRATIONAL);CHKERRQ(ierr);
   coeffs[0] = -1.0; coeffs[1] = 0.0;
-  ierr = FNSetParameters(f1,2,coeffs,0,NULL);CHKERRQ(ierr);
+  ierr = FNRationalSetNumerator(f1,2,coeffs);CHKERRQ(ierr);
 
   ierr = FNCreate(PETSC_COMM_WORLD,&f2);CHKERRQ(ierr);
   ierr = FNSetType(f2,FNRATIONAL);CHKERRQ(ierr);
   coeffs[0] = 1.0;
-  ierr = FNSetParameters(f2,1,coeffs,0,NULL);CHKERRQ(ierr);
+  ierr = FNRationalSetNumerator(f2,1,coeffs);CHKERRQ(ierr);
 
   ierr = FNCreate(PETSC_COMM_WORLD,&f3);CHKERRQ(ierr);
   ierr = FNSetType(f3,FNEXP);CHKERRQ(ierr);
-  coeffs[0] = -tau;
-  ierr = FNSetParameters(f3,1,coeffs,0,NULL);CHKERRQ(ierr);
+  ierr = FNSetScale(f3,-tau,1.0);CHKERRQ(ierr);
 
   funs[0] = f1;
   funs[1] = f2;
   funs[2] = f3;
-  ierr = DSSetFN(ds,3,funs);CHKERRQ(ierr);
+  ierr = DSNEPSetFN(ds,3,funs);CHKERRQ(ierr);
 
   /* Set dimensions */
   ld = n+2;  /* test leading dimension larger than n */
@@ -115,7 +114,7 @@ int main(int argc,char **argv)
   }
 
   /* Print first eigenvalue */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Computed eigenvalue =\n",n);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Computed eigenvalue =\n");CHKERRQ(ierr);
   nev = 1;
   for (i=0;i<nev;i++) {
 #if defined(PETSC_USE_COMPLEX)

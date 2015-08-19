@@ -3,7 +3,7 @@
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -85,6 +85,7 @@ PETSC_EXTERN PetscErrorCode STGetKSP(ST,KSP*);
 PETSC_EXTERN PetscErrorCode STSetShift(ST,PetscScalar);
 PETSC_EXTERN PetscErrorCode STGetShift(ST,PetscScalar*);
 PETSC_EXTERN PetscErrorCode STSetDefaultShift(ST,PetscScalar);
+PETSC_EXTERN PetscErrorCode STScaleShift(ST,PetscScalar);
 PETSC_EXTERN PetscErrorCode STSetBalanceMatrix(ST,Vec);
 PETSC_EXTERN PetscErrorCode STGetBalanceMatrix(ST,Vec*);
 PETSC_EXTERN PetscErrorCode STSetTransform(ST,PetscBool);
@@ -98,10 +99,7 @@ PETSC_EXTERN PetscErrorCode STBackTransform(ST,PetscInt,PetscScalar*,PetscScalar
 
 PETSC_EXTERN PetscErrorCode STCheckNullSpace(ST,BV);
 
-PETSC_EXTERN PetscErrorCode STGetOperationCounters(ST,PetscInt*,PetscInt*);
-PETSC_EXTERN PetscErrorCode STResetOperationCounters(ST);
-
-PETSC_EXTERN PetscErrorCode STMatGetVecs(ST,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode STMatCreateVecs(ST,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode STMatGetSize(ST,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode STMatGetLocalSize(ST,PetscInt*,PetscInt*);
 
@@ -122,8 +120,6 @@ PETSC_EXTERN PetscErrorCode STSetMatStructure(ST,MatStructure);
 PETSC_EXTERN PetscErrorCode STGetMatStructure(ST,MatStructure*);
 
 PETSC_EXTERN PetscFunctionList STList;
-PETSC_EXTERN PetscBool         STRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode STRegisterAll(void);
 PETSC_EXTERN PetscErrorCode STRegister(const char[],PetscErrorCode(*)(ST));
 
 /* --------- options specific to particular spectral transformations-------- */

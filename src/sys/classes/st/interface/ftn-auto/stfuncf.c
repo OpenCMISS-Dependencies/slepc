@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* stfunc.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -32,6 +32,16 @@ extern void PetscRmPointer(void*);
 #define streset_ STRESET
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define streset_ streset
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define stdestroy_ STDESTROY
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define stdestroy_ stdestroy
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define stcreate_ STCREATE
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define stcreate_ stcreate
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define stsetoperators_ STSETOPERATORS
@@ -69,6 +79,11 @@ extern void PetscRmPointer(void*);
 #define stsetdefaultshift_ stsetdefaultshift
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define stscaleshift_ STSCALESHIFT
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define stscaleshift_ stscaleshift
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define stsetbalancematrix_ STSETBALANCEMATRIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define stsetbalancematrix_ stsetbalancematrix
@@ -97,6 +112,15 @@ extern "C" {
 PETSC_EXTERN void PETSC_STDCALL  streset_(ST *st, int *__ierr ){
 *__ierr = STReset(*st);
 }
+PETSC_EXTERN void PETSC_STDCALL  stdestroy_(ST *st, int *__ierr ){
+*__ierr = STDestroy(
+	(ST* )PetscToPointer((st) ));
+}
+PETSC_EXTERN void PETSC_STDCALL  stcreate_(MPI_Fint * comm,ST *newst, int *__ierr ){
+*__ierr = STCreate(
+	MPI_Comm_f2c( *(comm) ),
+	(ST* )PetscToPointer((newst) ));
+}
 PETSC_EXTERN void PETSC_STDCALL  stsetoperators_(ST *st,PetscInt *n,Mat A[], int *__ierr ){
 *__ierr = STSetOperators(*st,*n,A);
 }
@@ -117,6 +141,9 @@ PETSC_EXTERN void PETSC_STDCALL  stgetshift_(ST *st,PetscScalar* shift, int *__i
 }
 PETSC_EXTERN void PETSC_STDCALL  stsetdefaultshift_(ST *st,PetscScalar *defaultshift, int *__ierr ){
 *__ierr = STSetDefaultShift(*st,*defaultshift);
+}
+PETSC_EXTERN void PETSC_STDCALL  stscaleshift_(ST *st,PetscScalar *factor, int *__ierr ){
+*__ierr = STScaleShift(*st,*factor);
 }
 PETSC_EXTERN void PETSC_STDCALL  stsetbalancematrix_(ST *st,Vec D, int *__ierr ){
 *__ierr = STSetBalanceMatrix(*st,

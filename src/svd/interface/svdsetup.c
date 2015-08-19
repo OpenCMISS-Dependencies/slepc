@@ -3,7 +3,7 @@
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -21,7 +21,7 @@
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
 
-#include <slepc-private/svdimpl.h>      /*I "slepcsvd.h" I*/
+#include <slepc/private/svdimpl.h>      /*I "slepcsvd.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SVDSetOperator"
@@ -46,7 +46,7 @@ PetscErrorCode SVDSetOperator(SVD svd,Mat mat)
   PetscValidHeaderSpecific(svd,SVD_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   PetscCheckSameComm(svd,1,mat,2);
-  if (svd->setupcalled) { ierr = SVDReset(svd);CHKERRQ(ierr); }
+  if (svd->state) { ierr = SVDReset(svd);CHKERRQ(ierr); }
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   ierr = MatDestroy(&svd->OP);CHKERRQ(ierr);
   svd->OP = mat;
@@ -90,12 +90,12 @@ PetscErrorCode SVDGetOperator(SVD svd,Mat *A)
    Input Parameter:
 .  svd   - singular value solver context
 
-   Level: advanced
-
    Notes:
    This function need not be called explicitly in most cases, since SVDSolve()
    calls it. It can be useful when one wants to measure the set-up time
    separately from the solve time.
+
+   Level: developer
 
 .seealso: SVDCreate(), SVDSolve(), SVDDestroy()
 @*/
@@ -109,7 +109,7 @@ PetscErrorCode SVDSetUp(SVD svd)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(svd,SVD_CLASSID,1);
-  if (svd->setupcalled) PetscFunctionReturn(0);
+  if (svd->state) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(SVD_SetUp,svd,0,0,0);CHKERRQ(ierr);
 
   /* reset the convergence flag from the previous solves */
@@ -210,7 +210,7 @@ PetscErrorCode SVDSetUp(SVD svd)
   }
 
   ierr = PetscLogEventEnd(SVD_SetUp,svd,0,0,0);CHKERRQ(ierr);
-  svd->setupcalled = 1;
+  svd->state = SVD_STATE_SETUP;
   PetscFunctionReturn(0);
 }
 
@@ -254,7 +254,7 @@ PetscErrorCode SVDSetInitialSpace(SVD svd,PetscInt n,Vec *is)
   PetscValidLogicalCollectiveInt(svd,n,2);
   if (n<0) SETERRQ(PetscObjectComm((PetscObject)svd),PETSC_ERR_ARG_OUTOFRANGE,"Argument n cannot be negative");
   ierr = SlepcBasisReference_Private(n,is,&svd->nini,&svd->IS);CHKERRQ(ierr);
-  if (n>0) svd->setupcalled = 0;
+  if (n>0) svd->state = SVD_STATE_INITIAL;
   PetscFunctionReturn(0);
 }
 
@@ -298,7 +298,7 @@ PetscErrorCode SVDSetInitialSpaceLeft(SVD svd,PetscInt n,Vec *is)
   PetscValidLogicalCollectiveInt(svd,n,2);
   if (n<0) SETERRQ(PetscObjectComm((PetscObject)svd),PETSC_ERR_ARG_OUTOFRANGE,"Argument n cannot be negative");
   ierr = SlepcBasisReference_Private(n,is,&svd->ninil,&svd->ISL);CHKERRQ(ierr);
-  if (n>0) svd->setupcalled = 0;
+  if (n>0) svd->state = SVD_STATE_INITIAL;
   PetscFunctionReturn(0);
 }
 
@@ -364,7 +364,7 @@ PetscErrorCode SVDAllocateSolution(SVD svd,PetscInt extra)
   ierr = BVGetSizes(svd->V,NULL,NULL,&oldsize);CHKERRQ(ierr);
 
   /* allocate sigma */
-  if (requested != oldsize) {
+  if (requested != oldsize || !svd->sigma) {
     if (oldsize) {
       ierr = PetscFree3(svd->sigma,svd->perm,svd->errest);CHKERRQ(ierr);
     }
@@ -377,7 +377,7 @@ PetscErrorCode SVDAllocateSolution(SVD svd,PetscInt extra)
     if (!((PetscObject)(svd->V))->type_name) {
       ierr = BVSetType(svd->V,BVSVEC);CHKERRQ(ierr);
     }
-    ierr = SVDMatGetVecs(svd,&tr,NULL);CHKERRQ(ierr);
+    ierr = SVDMatCreateVecs(svd,&tr,NULL);CHKERRQ(ierr);
     ierr = BVSetSizesFromVec(svd->V,tr,requested);CHKERRQ(ierr);
     ierr = VecDestroy(&tr);CHKERRQ(ierr);
   } else {
@@ -390,7 +390,7 @@ PetscErrorCode SVDAllocateSolution(SVD svd,PetscInt extra)
       if (!((PetscObject)(svd->U))->type_name) {
         ierr = BVSetType(svd->U,BVSVEC);CHKERRQ(ierr);
       }
-      ierr = SVDMatGetVecs(svd,NULL,&tl);CHKERRQ(ierr);
+      ierr = SVDMatCreateVecs(svd,NULL,&tl);CHKERRQ(ierr);
       ierr = BVSetSizesFromVec(svd->U,tl,requested);CHKERRQ(ierr);
       ierr = VecDestroy(&tl);CHKERRQ(ierr);
     } else {

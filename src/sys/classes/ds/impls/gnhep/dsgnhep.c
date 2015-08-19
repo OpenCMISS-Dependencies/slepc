@@ -1,7 +1,7 @@
 /*
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -19,7 +19,7 @@
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
 
-#include <slepc-private/dsimpl.h>
+#include <slepc/private/dsimpl.h>
 #include <slepcblaslapack.h>
 
 /*
@@ -295,12 +295,12 @@ PetscErrorCode DSSort_GNHEP_Arbitrary(DS ds,PetscScalar *wr,PetscScalar *wi,Pets
 #endif
   liwork = 1;
   ierr = DSAllocateWork_Private(ds,lwork+2*n,0,liwork+n);CHKERRQ(ierr);
-  beta = ds->work;
-  work = ds->work + n;
-  lwork = ds->lwork - n;
+  beta      = ds->work;
+  work      = ds->work + n;
+  lwork     = ds->lwork - n;
   selection = ds->iwork;
-  iwork = ds->iwork + n;
-  liwork = ds->liwork - n;
+  iwork     = ds->iwork + n;
+  liwork    = ds->liwork - n;
   /* Compute the selected eigenvalue to be in the leading position */
   ierr = DSSortEigenvalues_Private(ds,rr,ri,ds->perm,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscMemzero(selection,n*sizeof(PetscBLASInt));CHKERRQ(ierr);

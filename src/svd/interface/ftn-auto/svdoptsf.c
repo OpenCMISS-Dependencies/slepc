@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* svdopts.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -62,6 +62,11 @@ extern void PetscRmPointer(void*);
 #define svdsetwhichsingulartriplets_ SVDSETWHICHSINGULARTRIPLETS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define svdsetwhichsingulartriplets_ svdsetwhichsingulartriplets
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define svdgetwhichsingulartriplets_ SVDGETWHICHSINGULARTRIPLETS
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define svdgetwhichsingulartriplets_ svdgetwhichsingulartriplets
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define svdsetfromoptions_ SVDSETFROMOPTIONS
@@ -104,6 +109,10 @@ PETSC_EXTERN void PETSC_STDCALL  svdgetdimensions_(SVD *svd,PetscInt *nsv,PetscI
 }
 PETSC_EXTERN void PETSC_STDCALL  svdsetwhichsingulartriplets_(SVD *svd,SVDWhich *which, int *__ierr ){
 *__ierr = SVDSetWhichSingularTriplets(*svd,*which);
+}
+PETSC_EXTERN void PETSC_STDCALL  svdgetwhichsingulartriplets_(SVD *svd,SVDWhich *which, int *__ierr ){
+*__ierr = SVDGetWhichSingularTriplets(*svd,
+	(SVDWhich* )PetscToPointer((which) ));
 }
 PETSC_EXTERN void PETSC_STDCALL  svdsetfromoptions_(SVD *svd, int *__ierr ){
 *__ierr = SVDSetFromOptions(*svd);

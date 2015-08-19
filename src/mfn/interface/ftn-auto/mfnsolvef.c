@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* mfnsolve.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -38,6 +38,11 @@ extern void PetscRmPointer(void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define mfngetiterationnumber_ mfngetiterationnumber
 #endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define mfngetconvergedreason_ MFNGETCONVERGEDREASON
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define mfngetconvergedreason_ mfngetconvergedreason
+#endif
 
 
 /* Definitions of Fortran Wrapper routines */
@@ -51,6 +56,10 @@ PETSC_EXTERN void PETSC_STDCALL  mfnsolve_(MFN *mfn,Vec b,Vec x, int *__ierr ){
 }
 PETSC_EXTERN void PETSC_STDCALL  mfngetiterationnumber_(MFN *mfn,PetscInt *its, int *__ierr ){
 *__ierr = MFNGetIterationNumber(*mfn,its);
+}
+PETSC_EXTERN void PETSC_STDCALL  mfngetconvergedreason_(MFN *mfn,MFNConvergedReason *reason, int *__ierr ){
+*__ierr = MFNGetConvergedReason(*mfn,
+	(MFNConvergedReason* )PetscToPointer((reason) ));
 }
 #if defined(__cplusplus)
 }

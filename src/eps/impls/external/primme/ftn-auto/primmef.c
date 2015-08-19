@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* primme.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -43,6 +43,11 @@ extern void PetscRmPointer(void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define epsprimmesetmethod_ epsprimmesetmethod
 #endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define epsprimmegetmethod_ EPSPRIMMEGETMETHOD
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define epsprimmegetmethod_ epsprimmegetmethod
+#endif
 
 
 /* Definitions of Fortran Wrapper routines */
@@ -57,6 +62,10 @@ PETSC_EXTERN void PETSC_STDCALL  epsprimmegetblocksize_(EPS *eps,PetscInt *bs, i
 }
 PETSC_EXTERN void PETSC_STDCALL  epsprimmesetmethod_(EPS *eps,EPSPRIMMEMethod *method, int *__ierr ){
 *__ierr = EPSPRIMMESetMethod(*eps,*method);
+}
+PETSC_EXTERN void PETSC_STDCALL  epsprimmegetmethod_(EPS *eps,EPSPRIMMEMethod *method, int *__ierr ){
+*__ierr = EPSPRIMMEGetMethod(*eps,
+	(EPSPRIMMEMethod* )PetscToPointer((method) ));
 }
 #if defined(__cplusplus)
 }

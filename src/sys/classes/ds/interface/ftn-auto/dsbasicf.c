@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* dsbasic.c */
 /* Fortran interface file */
 
@@ -22,12 +22,17 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
 #include "slepcds.h"
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dscreate_ DSCREATE
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define dscreate_ dscreate
+#endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dssetmethod_ DSSETMETHOD
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
@@ -37,16 +42,6 @@ extern void PetscRmPointer(void*);
 #define dsgetmethod_ DSGETMETHOD
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dsgetmethod_ dsgetmethod
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dssetfunctionmethod_ DSSETFUNCTIONMETHOD
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dssetfunctionmethod_ dssetfunctionmethod
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dsgetfunctionmethod_ DSGETFUNCTIONMETHOD
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dsgetfunctionmethod_ dsgetfunctionmethod
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dssetcompact_ DSSETCOMPACT
@@ -89,21 +84,6 @@ extern void PetscRmPointer(void*);
 #define dsgetblocksize_ dsgetblocksize
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dssetfn_ DSSETFN
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dssetfn_ dssetfn
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dsgetfn_ DSGETFN
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dsgetfn_ dsgetfn
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dsgetnumfn_ DSGETNUMFN
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define dsgetnumfn_ dsgetnumfn
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dssetfromoptions_ DSSETFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dssetfromoptions_ dssetfromoptions
@@ -118,23 +98,27 @@ extern void PetscRmPointer(void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dsreset_ dsreset
 #endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dsdestroy_ DSDESTROY
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define dsdestroy_ dsdestroy
+#endif
 
 
 /* Definitions of Fortran Wrapper routines */
 #if defined(__cplusplus)
 extern "C" {
 #endif
+PETSC_EXTERN void PETSC_STDCALL  dscreate_(MPI_Fint * comm,DS *newds, int *__ierr ){
+*__ierr = DSCreate(
+	MPI_Comm_f2c( *(comm) ),
+	(DS* )PetscToPointer((newds) ));
+}
 PETSC_EXTERN void PETSC_STDCALL  dssetmethod_(DS *ds,PetscInt *meth, int *__ierr ){
 *__ierr = DSSetMethod(*ds,*meth);
 }
 PETSC_EXTERN void PETSC_STDCALL  dsgetmethod_(DS *ds,PetscInt *meth, int *__ierr ){
 *__ierr = DSGetMethod(*ds,meth);
-}
-PETSC_EXTERN void PETSC_STDCALL  dssetfunctionmethod_(DS *ds,PetscInt *meth, int *__ierr ){
-*__ierr = DSSetFunctionMethod(*ds,*meth);
-}
-PETSC_EXTERN void PETSC_STDCALL  dsgetfunctionmethod_(DS *ds,PetscInt *meth, int *__ierr ){
-*__ierr = DSGetFunctionMethod(*ds,meth);
 }
 PETSC_EXTERN void PETSC_STDCALL  dssetcompact_(DS *ds,PetscBool *comp, int *__ierr ){
 *__ierr = DSSetCompact(*ds,*comp);
@@ -160,17 +144,6 @@ PETSC_EXTERN void PETSC_STDCALL  dssetblocksize_(DS *ds,PetscInt *bs, int *__ier
 PETSC_EXTERN void PETSC_STDCALL  dsgetblocksize_(DS *ds,PetscInt *bs, int *__ierr ){
 *__ierr = DSGetBlockSize(*ds,bs);
 }
-PETSC_EXTERN void PETSC_STDCALL  dssetfn_(DS *ds,PetscInt *n,FN f[], int *__ierr ){
-*__ierr = DSSetFN(*ds,*n,
-	(FN* )PetscToPointer((f) ));
-}
-PETSC_EXTERN void PETSC_STDCALL  dsgetfn_(DS *ds,PetscInt *k,FN *f, int *__ierr ){
-*__ierr = DSGetFN(*ds,*k,
-	(FN* )PetscToPointer((f) ));
-}
-PETSC_EXTERN void PETSC_STDCALL  dsgetnumfn_(DS *ds,PetscInt *n, int *__ierr ){
-*__ierr = DSGetNumFN(*ds,n);
-}
 PETSC_EXTERN void PETSC_STDCALL  dssetfromoptions_(DS *ds, int *__ierr ){
 *__ierr = DSSetFromOptions(*ds);
 }
@@ -179,6 +152,10 @@ PETSC_EXTERN void PETSC_STDCALL  dsallocate_(DS *ds,PetscInt *ld, int *__ierr ){
 }
 PETSC_EXTERN void PETSC_STDCALL  dsreset_(DS *ds, int *__ierr ){
 *__ierr = DSReset(*ds);
+}
+PETSC_EXTERN void PETSC_STDCALL  dsdestroy_(DS *ds, int *__ierr ){
+*__ierr = DSDestroy(
+	(DS* )PetscToPointer((ds) ));
 }
 #if defined(__cplusplus)
 }

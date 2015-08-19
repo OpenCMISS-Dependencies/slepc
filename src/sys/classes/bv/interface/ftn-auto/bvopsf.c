@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* bvops.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -79,14 +79,14 @@ extern void PetscRmPointer(void*);
 #define bvmatmult_ bvmatmult
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define bvmatmulthermitiantranspose_ BVMATMULTHERMITIANTRANSPOSE
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define bvmatmulthermitiantranspose_ bvmatmulthermitiantranspose
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define bvmatmultcolumn_ BVMATMULTCOLUMN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define bvmatmultcolumn_ bvmatmultcolumn
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define bvaxpy_ BVAXPY
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define bvaxpy_ bvaxpy
 #endif
 
 
@@ -131,12 +131,13 @@ PETSC_EXTERN void PETSC_STDCALL  bvmatmult_(BV *V,Mat A,BV *Y, int *__ierr ){
 *__ierr = BVMatMult(*V,
 	(Mat)PetscToPointer((A) ),*Y);
 }
+PETSC_EXTERN void PETSC_STDCALL  bvmatmulthermitiantranspose_(BV *V,Mat A,BV *Y, int *__ierr ){
+*__ierr = BVMatMultHermitianTranspose(*V,
+	(Mat)PetscToPointer((A) ),*Y);
+}
 PETSC_EXTERN void PETSC_STDCALL  bvmatmultcolumn_(BV *V,Mat A,PetscInt *j, int *__ierr ){
 *__ierr = BVMatMultColumn(*V,
 	(Mat)PetscToPointer((A) ),*j);
-}
-PETSC_EXTERN void PETSC_STDCALL  bvaxpy_(BV *Y,PetscScalar *alpha,BV *X, int *__ierr ){
-*__ierr = BVAXPY(*Y,*alpha,*X);
 }
 #if defined(__cplusplus)
 }

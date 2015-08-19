@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = nepoptsf.c nepmonf.c nepsolvef.c nepbasicf.c nepsetupf.c nepdefaultf.c
+SOURCEC  = nepviewf.c nepsetupf.c nepdefaultf.c nepsolvef.c nepoptsf.c nepmonf.c nepbasicf.c
 SOURCEF  =
 SOURCEH  = 
 DIRS     =
 LIBBASE  = libslepcnep
 LOCDIR   = src/nep/interface/ftn-auto/
-include ${SLEPC_DIR}/conf/slepc_common
+include ${SLEPC_DIR}/lib/slepc/conf/slepc_common

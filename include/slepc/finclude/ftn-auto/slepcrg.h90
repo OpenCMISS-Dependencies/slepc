@@ -1,0 +1,121 @@
+        subroutine RGEllipseSetParameters(rg, center, radius, vscale ,  &
+     &ierr)
+       RG rg ! RG
+       PetscScalar center ! PetscScalar
+       PetscReal radius ! PetscReal
+       PetscReal vscale ! PetscReal
+       integer ierr
+       end subroutine
+        subroutine RGEllipseGetParameters(rg, center, radius, vscale ,  &
+     &ierr)
+       RG rg ! RG
+       PetscScalar center ! PetscScalar
+       PetscReal radius ! PetscReal
+       PetscReal vscale ! PetscReal
+       integer ierr
+       end subroutine
+        subroutine RGIntervalSetEndpoints(rg, a, b, c, d ,ierr)
+       RG rg ! RG
+       PetscReal a ! PetscReal
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       integer ierr
+       end subroutine
+        subroutine RGIntervalGetEndpoints(rg, a, b, c, d ,ierr)
+       RG rg ! RG
+       PetscReal a ! PetscReal
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       integer ierr
+       end subroutine
+        subroutine RGRingSetParameters(rg, center, radius, vscale,      &
+     &start_ang, end_ang, width ,ierr)
+       RG rg ! RG
+       PetscScalar center ! PetscScalar
+       PetscReal radius ! PetscReal
+       PetscReal vscale ! PetscReal
+       PetscReal start_ang ! PetscReal
+       PetscReal end_ang ! PetscReal
+       PetscReal width ! PetscReal
+       integer ierr
+       end subroutine
+        subroutine RGRingGetParameters(rg, center, radius, vscale,      &
+     &start_ang, end_ang, width ,ierr)
+       RG rg ! RG
+       PetscScalar center ! PetscScalar
+       PetscReal radius ! PetscReal
+       PetscReal vscale ! PetscReal
+       PetscReal start_ang ! PetscReal
+       PetscReal end_ang ! PetscReal
+       PetscReal width ! PetscReal
+       integer ierr
+       end subroutine
+        subroutine RGPolygonSetVertices(rg, n, vr, vi ,ierr)
+       RG rg ! RG
+       PetscInt n ! PetscInt
+       PetscScalar vr ! PetscScalar
+       PetscScalar vi ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine RGPolygonGetVertices(rg, n, vr, vi ,ierr)
+       RG rg ! RG
+       PetscInt n ! PetscInt
+       PetscScalar vr ! PetscScalar
+       PetscScalar vi ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine RGCreate(comm, newrg ,ierr)
+       integer comm ! MPI_Comm
+       RG newrg ! RG
+       integer ierr
+       end subroutine
+        subroutine RGSetFromOptions(rg ,ierr)
+       RG rg ! RG
+       integer ierr
+       end subroutine
+        subroutine RGIsTrivial(rg, trivial ,ierr)
+       RG rg ! RG
+       PetscBool trivial ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine RGCheckInside(rg, n, ar, ai, inside ,ierr)
+       RG rg ! RG
+       PetscInt n ! PetscInt
+       PetscScalar ar ! PetscScalar
+       PetscScalar ai ! PetscScalar
+       PetscInt inside ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine RGComputeContour(rg, n, cr, ci ,ierr)
+       RG rg ! RG
+       PetscInt n ! PetscInt
+       PetscScalar cr ! PetscScalar
+       PetscScalar ci ! PetscScalar
+       integer ierr
+       end subroutine
+        subroutine RGSetComplement(rg, flg ,ierr)
+       RG rg ! RG
+       PetscBool flg ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine RGGetComplement(rg, flg ,ierr)
+       RG rg ! RG
+       PetscBool flg ! PetscBool
+       integer ierr
+       end subroutine
+        subroutine RGSetScale(rg, sfactor ,ierr)
+       RG rg ! RG
+       PetscReal sfactor ! PetscReal
+       integer ierr
+       end subroutine
+        subroutine RGGetScale(rg, sfactor ,ierr)
+       RG rg ! RG
+       PetscReal sfactor ! PetscReal
+       integer ierr
+       end subroutine
+        subroutine RGDestroy(rg ,ierr)
+       RG rg ! RG
+       integer ierr
+       end subroutine

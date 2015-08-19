@@ -10,4 +10,4 @@ SOURCEH  =
 DIRS     =
 LIBBASE  = libslepcsvd
 LOCDIR   = src/svd/impls/cyclic/ftn-auto/
-include ${SLEPC_DIR}/conf/slepc_common
+include ${SLEPC_DIR}/lib/slepc/conf/slepc_common

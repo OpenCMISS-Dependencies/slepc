@@ -4,7 +4,7 @@
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -35,7 +35,7 @@
     slepcversion.h contains version info
 */
 #include <slepcversion.h>
-#define SLEPC_AUTHOR_INFO "       The SLEPc Team\n    slepc-maint@grycap.upv.es\n http://www.grycap.upv.es/slepc\n"
+#define SLEPC_AUTHOR_INFO "       The SLEPc Team\n    slepc-maint@upv.es\n http://slepc.upv.es\n"
 
 /* ========================================================================== */
 /*

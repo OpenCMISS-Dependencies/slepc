@@ -1,6 +1,6 @@
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  SLEPc - Scalable Library for Eigenvalue Problem Computations
-!  Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+!  Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 !
 !  This file is part of SLEPc.
 !     
@@ -25,12 +25,12 @@
         use slepcrg
         use slepcds
         use slepceps
-#include <finclude/slepcpep.h>
-#include <finclude/ftn-custom/slepcpepdef.h90>
+#include <slepc/finclude/slepcpep.h>
+#include <slepc/finclude/ftn-custom/slepcpepdef.h90>
         end module
 
         module slepcpep
         use slepcpepdef
-#include <finclude/slepcpep.h90>
+#include <slepc/finclude/slepcpep.h90>
         end module
 

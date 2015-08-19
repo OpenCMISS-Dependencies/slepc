@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* nepopts.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -57,6 +57,11 @@ extern void PetscRmPointer(void*);
 #define nepsetwhicheigenpairs_ NEPSETWHICHEIGENPAIRS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define nepsetwhicheigenpairs_ nepsetwhicheigenpairs
+#endif
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define nepgetwhicheigenpairs_ NEPGETWHICHEIGENPAIRS
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define nepgetwhicheigenpairs_ nepgetwhicheigenpairs
 #endif
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define nepsetlagpreconditioner_ NEPSETLAGPRECONDITIONER
@@ -122,6 +127,10 @@ PETSC_EXTERN void PETSC_STDCALL  nepsetdimensions_(NEP *nep,PetscInt *nev,PetscI
 PETSC_EXTERN void PETSC_STDCALL  nepsetwhicheigenpairs_(NEP *nep,NEPWhich *which, int *__ierr ){
 *__ierr = NEPSetWhichEigenpairs(*nep,*which);
 }
+PETSC_EXTERN void PETSC_STDCALL  nepgetwhicheigenpairs_(NEP *nep,NEPWhich *which, int *__ierr ){
+*__ierr = NEPGetWhichEigenpairs(*nep,
+	(NEPWhich* )PetscToPointer((which) ));
+}
 PETSC_EXTERN void PETSC_STDCALL  nepsetlagpreconditioner_(NEP *nep,PetscInt *lag, int *__ierr ){
 *__ierr = NEPSetLagPreconditioner(*nep,*lag);
 }
@@ -140,12 +149,12 @@ PETSC_EXTERN void PETSC_STDCALL  nepsettrackall_(NEP *nep,PetscBool *trackall, i
 PETSC_EXTERN void PETSC_STDCALL  nepgettrackall_(NEP *nep,PetscBool *trackall, int *__ierr ){
 *__ierr = NEPGetTrackAll(*nep,trackall);
 }
-PETSC_EXTERN void PETSC_STDCALL  nepsetrefine_(NEP *nep,NEPRefine *refine,PetscReal *tol,PetscInt *its, int *__ierr ){
-*__ierr = NEPSetRefine(*nep,*refine,*tol,*its);
+PETSC_EXTERN void PETSC_STDCALL  nepsetrefine_(NEP *nep,NEPRefine *refine,PetscInt *npart,PetscReal *tol,PetscInt *its, int *__ierr ){
+*__ierr = NEPSetRefine(*nep,*refine,*npart,*tol,*its);
 }
-PETSC_EXTERN void PETSC_STDCALL  nepgetrefine_(NEP *nep,NEPRefine *refine,PetscReal *tol,PetscInt *its, int *__ierr ){
+PETSC_EXTERN void PETSC_STDCALL  nepgetrefine_(NEP *nep,NEPRefine *refine,PetscInt *npart,PetscReal *tol,PetscInt *its, int *__ierr ){
 *__ierr = NEPGetRefine(*nep,
-	(NEPRefine* )PetscToPointer((refine) ),tol,its);
+	(NEPRefine* )PetscToPointer((refine) ),npart,tol,its);
 }
 #if defined(__cplusplus)
 }

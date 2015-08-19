@@ -1,0 +1,2 @@
+SLEPC_DIR = /home/dwirtz/software/slepc
+PETSC_ARCH = installed-arch-linux2-c-debug

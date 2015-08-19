@@ -3,18 +3,18 @@
 
 #define SLEPC_VERSION_RELEASE    1
 #define SLEPC_VERSION_MAJOR      3
-#define SLEPC_VERSION_MINOR      5
-#define SLEPC_VERSION_SUBMINOR   2
+#define SLEPC_VERSION_MINOR      6
+#define SLEPC_VERSION_SUBMINOR   0
 #define SLEPC_VERSION_PATCH      0
-#define SLEPC_RELEASE_DATE       "July 29, 2014"
-#define SLEPC_VERSION_DATE       "Oct 10, 2014"
+#define SLEPC_RELEASE_DATE       "June 12, 2015"
+#define SLEPC_VERSION_DATE       "unknown"
 
 #if !defined (SLEPC_VERSION_GIT)
-#define SLEPC_VERSION_GIT        "v3.5.2"
+#define SLEPC_VERSION_GIT        "unknown"
 #endif
 
 #if !defined(SLEPC_VERSION_DATE_GIT)
-#define SLEPC_VERSION_DATE_GIT   "2014-10-10 13:28:54 +0200"
+#define SLEPC_VERSION_DATE_GIT   "unknown"
 #endif
 
 #define SLEPC_VERSION_(MAJOR,MINOR,SUBMINOR) \

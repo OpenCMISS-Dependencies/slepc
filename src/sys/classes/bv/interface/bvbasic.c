@@ -3,7 +3,7 @@
 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    SLEPc - Scalable Library for Eigenvalue Problem Computations
-   Copyright (c) 2002-2014, Universitat Politecnica de Valencia, Spain
+   Copyright (c) 2002-2015, Universitat Politecnica de Valencia, Spain
 
    This file is part of SLEPc.
 
@@ -21,7 +21,7 @@
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
 
-#include <slepc-private/bvimpl.h>      /*I "slepcbv.h" I*/
+#include <slepc/private/bvimpl.h>      /*I "slepcbv.h" I*/
 
 PetscBool         BVRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList BVList = 0;
@@ -154,6 +154,7 @@ PetscErrorCode BVSetSizes(BV bv,PetscInt n,PetscInt N,PetscInt m)
     ierr = (*bv->ops->create)(bv);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(BV_Create,bv,0,0,0);CHKERRQ(ierr);
     bv->ops->create = 0;
+    bv->defersfo = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -261,6 +262,10 @@ PetscErrorCode BVGetSizes(BV bv,PetscInt *n,PetscInt *N,PetscInt *m)
    This function sets the number of constraints to nc and marks all remaining
    columns as regular. Normal user would call BVInsertConstraints() instead.
 
+   If nc is smaller than the previously set value, then some of the constraints
+   are discarded. In particular, using nc=0 removes all constraints preserving
+   the content of regular columns.
+
    Level: developer
 
 .seealso: BVInsertConstraints()
@@ -268,24 +273,35 @@ PetscErrorCode BVGetSizes(BV bv,PetscInt *n,PetscInt *N,PetscInt *m)
 PetscErrorCode BVSetNumConstraints(BV V,PetscInt nc)
 {
   PetscErrorCode ierr;
-  PetscInt       total;
+  PetscInt       total,diff,i;
+  Vec            x,y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(V,BV_CLASSID,1);
   PetscValidLogicalCollectiveInt(V,nc,2);
-  if (!nc) PetscFunctionReturn(0);
   if (nc<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of constraints (given %D) cannot be negative",nc);
   PetscValidType(V,1);
   BVCheckSizes(V,1);
   if (V->ci[0]!=-V->nc-1 || V->ci[1]!=-V->nc-1) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Cannot call BVSetNumConstraints after BVGetColumn");
 
+  diff = nc-V->nc;
+  if (!diff) PetscFunctionReturn(0);
   total = V->nc+V->m;
+  if (total-nc<=0) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_OUTOFRANGE,"Not enough columns for the given nc value");
+  if (diff<0) {  /* lessen constraints, shift contents of BV */
+    for (i=0;i<V->m;i++) {
+      ierr = BVGetColumn(V,i,&x);CHKERRQ(ierr);
+      ierr = BVGetColumn(V,i+diff,&y);CHKERRQ(ierr);
+      ierr = VecCopy(x,y);CHKERRQ(ierr);
+      ierr = BVRestoreColumn(V,i,&x);CHKERRQ(ierr);
+      ierr = BVRestoreColumn(V,i+diff,&y);CHKERRQ(ierr);
+    }
+  }
   V->nc = nc;
-  V->m = total-nc;
-  if (V->m<=0) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_OUTOFRANGE,"Not enough columns for the given nc value");
   V->ci[0] = -V->nc-1;
   V->ci[1] = -V->nc-1;
   V->l = 0;
+  V->m = total-nc;
   V->k = V->m;
   ierr = PetscObjectStateIncrease((PetscObject)V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -500,7 +516,7 @@ PetscErrorCode BVSetMatrix(BV bv,Mat B,PetscBool indef)
   bv->matrix = B;
   bv->indef  = indef;
   if (B && !bv->Bx) {
-    ierr = MatGetVecs(B,&bv->Bx,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(B,&bv->Bx,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)bv,(PetscObject)bv->Bx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -508,7 +524,7 @@ PetscErrorCode BVSetMatrix(BV bv,Mat B,PetscBool indef)
 
 #undef __FUNCT__
 #define __FUNCT__ "BVGetMatrix"
-/*@C
+/*@
    BVGetMatrix - Retrieves the matrix representation of the inner product.
 
    Not collective, though a parallel Mat may be returned
@@ -535,7 +551,7 @@ PetscErrorCode BVGetMatrix(BV bv,Mat *B,PetscBool *indef)
 
 #undef __FUNCT__
 #define __FUNCT__ "BVApplyMatrix"
-/*@C
+/*@
    BVApplyMatrix - Multiplies a vector by the matrix representation of the
    inner product.
 
@@ -553,7 +569,7 @@ PetscErrorCode BVGetMatrix(BV bv,Mat *B,PetscBool *indef)
 
    Level: advanced
 
-.seealso: BVSetMatrix()
+.seealso: BVSetMatrix(), BVApplyMatrixBV()
 @*/
 PetscErrorCode BVApplyMatrix(BV bv,Vec x,Vec y)
 {
@@ -569,6 +585,80 @@ PetscErrorCode BVApplyMatrix(BV bv,Vec x,Vec y)
   } else {
     ierr = VecCopy(x,y);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "BVApplyMatrixBV"
+/*@
+   BVApplyMatrixBV - Multiplies the BV vectors by the matrix representation
+   of the inner product.
+
+   Neighbor-wise Collective on BV
+
+   Input Parameter:
++  X - the basis vectors context
+
+   Output Parameter:
+.  Y - the basis vectors to store the result (optional)
+
+   Note:
+   This function computes Y = B*X, where B is the matrix given with
+   BVSetMatrix(). This operation is computed as in BVMatMult().
+   If no matrix was specified, then it just copies Y = X.
+
+   If no Y is given, the result is stored internally in the cached BV.
+
+   Level: developer
+
+.seealso: BVSetMatrix(), BVApplyMatrix(), BVMatMult(), BVGetCachedBV()
+@*/
+PetscErrorCode BVApplyMatrixBV(BV X,BV Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,BV_CLASSID,1);
+  if (Y) {
+    PetscValidHeaderSpecific(Y,BV_CLASSID,2);
+    if (X->matrix) {
+      ierr = BVMatMult(X,X->matrix,Y);CHKERRQ(ierr);
+    } else {
+      ierr = BVCopy(X,Y);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = BV_IPMatMultBV(X);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "BVGetCachedBV"
+/*@
+   BVGetCachedBV - Returns a BV object stored internally that holds the
+   result of B*X after a call to BVApplyMatrixBV().
+
+   Not collective
+
+   Input Parameter:
+.  bv    - the basis vectors context
+
+   Output Parameter:
+.  cached - the cached BV
+
+   Note:
+   The function will return a NULL if BVApplyMatrixBV() was not called yet.
+
+   Level: developer
+
+.seealso: BVApplyMatrixBV()
+@*/
+PetscErrorCode BVGetCachedBV(BV bv,BV *cached)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(bv,BV_CLASSID,1);
+  PetscValidPointer(cached,2);
+  *cached = bv->cached;
   PetscFunctionReturn(0);
 }
 
@@ -592,9 +682,9 @@ PetscErrorCode BVApplyMatrix(BV bv,Vec x,Vec y)
 @*/
 PetscErrorCode BVSetSignature(BV bv,Vec omega)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n;
-  PetscScalar    *pomega;
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
+  const PetscScalar *pomega;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bv,BV_CLASSID,1);
@@ -606,9 +696,9 @@ PetscErrorCode BVSetSignature(BV bv,Vec omega)
   if (n!=bv->k) SETERRQ2(PetscObjectComm((PetscObject)bv),PETSC_ERR_ARG_SIZ,"Vec argument has %D elements, should be %D",n,bv->k);
   ierr = BV_AllocateSignature(bv);CHKERRQ(ierr);
   if (bv->indef) {
-    ierr = VecGetArray(omega,&pomega);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(omega,&pomega);CHKERRQ(ierr);
     for (i=0;i<n;i++) bv->omega[bv->nc+i] = PetscRealPart(pomega[i]);
-    ierr = VecRestoreArray(omega,&pomega);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(omega,&pomega);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(bv,"Ignoring signature because BV is not indefinite\n");CHKERRQ(ierr);
   }
@@ -677,13 +767,14 @@ PetscErrorCode BVSetFromOptions(BV bv)
   char           type[256];
   PetscBool      flg;
   PetscReal      r;
-  PetscInt       i,j;
+  PetscInt       i,j,k;
   const char     *orth_list[2] = {"cgs","mgs"};
   const char     *ref_list[3] = {"ifneeded","never","always"};
+  const char     *borth_list[2] = {"gs","chol"};
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bv,BV_CLASSID,1);
-  if (!BVRegisterAllCalled) { ierr = BVRegisterAll();CHKERRQ(ierr); }
+  ierr = BVRegisterAll();CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)bv);CHKERRQ(ierr);
     ierr = PetscOptionsFList("-bv_type","Basis Vectors type","BVSetType",BVList,(char*)(((PetscObject)bv)->type_name?((PetscObject)bv)->type_name:BVSVEC),type,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -702,10 +793,20 @@ PetscErrorCode BVSetFromOptions(BV bv)
     ierr = PetscOptionsEList("-bv_orthog_refine","Iterative refinement mode during orthogonalization","BVSetOrthogonalization",ref_list,3,ref_list[j],&j,NULL);CHKERRQ(ierr);
     r = bv->orthog_eta;
     ierr = PetscOptionsReal("-bv_orthog_eta","Parameter of iterative refinement during orthogonalization","BVSetOrthogonalization",r,&r,NULL);CHKERRQ(ierr);
-    ierr = BVSetOrthogonalization(bv,(BVOrthogType)i,(BVOrthogRefineType)j,r);CHKERRQ(ierr);
+    k = bv->orthog_block;
+    ierr = PetscOptionsEList("-bv_orthog_block","Block orthogonalization method","BVSetOrthogonalization",borth_list,2,borth_list[k],&k,NULL);CHKERRQ(ierr);
+    ierr = BVSetOrthogonalization(bv,(BVOrthogType)i,(BVOrthogRefineType)j,r,(BVOrthogBlockType)k);CHKERRQ(ierr);
 
-    if (bv->ops->setfromoptions) {
-      ierr = (*bv->ops->setfromoptions)(bv);CHKERRQ(ierr);
+    ierr = PetscOptionsBoolGroupBegin("-bv_matmult_vecs","Do matmult as matrix-vector products","BVSetMatMultMethod",&flg);CHKERRQ(ierr);
+    if (flg) { ierr = BVSetMatMultMethod(bv,BV_MATMULT_VECS);CHKERRQ(ierr); }
+    ierr = PetscOptionsBoolGroup("-bv_matmult_mat","Do matmult as a single matrix-matrix product","BVSetMatMultMethod",&flg);CHKERRQ(ierr);
+    if (flg) { ierr = BVSetMatMultMethod(bv,BV_MATMULT_MAT);CHKERRQ(ierr); }
+    ierr = PetscOptionsBoolGroupEnd("-bv_matmult_mat_save","Do matmult as a single matrix-matrix product and save auxiliary matrices","BVSetMatMultMethod",&flg);CHKERRQ(ierr);
+    if (flg) { ierr = BVSetMatMultMethod(bv,BV_MATMULT_MAT_SAVE);CHKERRQ(ierr); }
+
+    if (bv->ops->create) bv->defersfo = PETSC_TRUE;   /* defer call to setfromoptions */
+    else if (bv->ops->setfromoptions) {
+      ierr = (*bv->ops->setfromoptions)(PetscOptionsObject,bv);CHKERRQ(ierr);
     }
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)bv);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -715,22 +816,26 @@ PetscErrorCode BVSetFromOptions(BV bv)
 #undef __FUNCT__
 #define __FUNCT__ "BVSetOrthogonalization"
 /*@
-   BVSetOrthogonalization - Specifies the type of orthogonalization technique
-   to be used (classical or modified Gram-Schmidt with or without refinement).
+   BVSetOrthogonalization - Specifies the method used for the orthogonalization of
+   vectors (classical or modified Gram-Schmidt with or without refinement), and
+   for the block-orthogonalization (simultaneous orthogonalization of a set of
+   vectors).
 
    Logically Collective on BV
 
    Input Parameters:
 +  bv     - the basis vectors context
-.  type   - the type of orthogonalization technique
+.  type   - the method of vector orthogonalization
 .  refine - type of refinement
--  eta    - parameter for selective refinement
+.  eta    - parameter for selective refinement
+-  block  - the method of block orthogonalization
 
    Options Database Keys:
 +  -bv_orthog_type <type> - Where <type> is cgs for Classical Gram-Schmidt orthogonalization
                          (default) or mgs for Modified Gram-Schmidt orthogonalization
 .  -bv_orthog_refine <ref> - Where <ref> is one of never, ifneeded (default) or always
--  -bv_orthog_eta <eta> -  For setting the value of eta
+.  -bv_orthog_eta <eta> -  For setting the value of eta
+-  -bv_orthog_block <block> - Where <block> is the block-orthogonalization method
 
    Notes:
    The default settings work well for most problems.
@@ -740,17 +845,21 @@ PetscErrorCode BVSetFromOptions(BV bv)
 
    When using several processors, MGS is likely to result in bad scalability.
 
+   If the method set for block orthogonalization is GS, then the computation
+   is done column by column with the vector orthogonalization.
+
    Level: advanced
 
-.seealso: BVOrthogonalizeColumn(), BVGetOrthogonalization(), BVOrthogType, BVOrthogRefineType
+.seealso: BVOrthogonalizeColumn(), BVGetOrthogonalization(), BVOrthogType, BVOrthogRefineType, BVOrthogBlockType
 @*/
-PetscErrorCode BVSetOrthogonalization(BV bv,BVOrthogType type,BVOrthogRefineType refine,PetscReal eta)
+PetscErrorCode BVSetOrthogonalization(BV bv,BVOrthogType type,BVOrthogRefineType refine,PetscReal eta,BVOrthogBlockType block)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bv,BV_CLASSID,1);
   PetscValidLogicalCollectiveEnum(bv,type,2);
   PetscValidLogicalCollectiveEnum(bv,refine,3);
   PetscValidLogicalCollectiveReal(bv,eta,4);
+  PetscValidLogicalCollectiveEnum(bv,block,5);
   switch (type) {
     case BV_ORTHOG_CGS:
     case BV_ORTHOG_MGS:
@@ -774,12 +883,20 @@ PetscErrorCode BVSetOrthogonalization(BV bv,BVOrthogType type,BVOrthogRefineType
     if (eta <= 0.0 || eta > 1.0) SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_ARG_OUTOFRANGE,"Invalid eta value");
     bv->orthog_eta = eta;
   }
+  switch (block) {
+    case BV_ORTHOG_BLOCK_GS:
+    case BV_ORTHOG_BLOCK_CHOL:
+      bv->orthog_block = block;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_ARG_WRONG,"Unknown block orthogonalization type");
+  }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "BVGetOrthogonalization"
-/*@C
+/*@
    BVGetOrthogonalization - Gets the orthogonalization settings from the BV object.
 
    Not Collective
@@ -788,21 +905,89 @@ PetscErrorCode BVSetOrthogonalization(BV bv,BVOrthogType type,BVOrthogRefineType
 .  bv - basis vectors context
 
    Output Parameter:
-+  type   - type of orthogonalization technique
++  type   - the method of vector orthogonalization
 .  refine - type of refinement
--  eta    - parameter for selective refinement
+.  eta    - parameter for selective refinement
+-  block  - the method of block orthogonalization
 
    Level: advanced
 
-.seealso: BVOrthogonalizeColumn(), BVSetOrthogonalization(), BVOrthogType, BVOrthogRefineType
+.seealso: BVOrthogonalizeColumn(), BVSetOrthogonalization(), BVOrthogType, BVOrthogRefineType, BVOrthogBlockType
 @*/
-PetscErrorCode BVGetOrthogonalization(BV bv,BVOrthogType *type,BVOrthogRefineType *refine,PetscReal *eta)
+PetscErrorCode BVGetOrthogonalization(BV bv,BVOrthogType *type,BVOrthogRefineType *refine,PetscReal *eta,BVOrthogBlockType *block)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bv,BV_CLASSID,1);
   if (type)   *type   = bv->orthog_type;
   if (refine) *refine = bv->orthog_ref;
   if (eta)    *eta    = bv->orthog_eta;
+  if (block)  *block  = bv->orthog_block;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "BVSetMatMultMethod"
+/*@
+   BVSetMatMultMethod - Specifies the method used for the BVMatMult() operation.
+
+   Logically Collective on BV
+
+   Input Parameters:
++  bv     - the basis vectors context
+-  method - the method for the BVMatMult() operation
+
+   Options Database Keys:
++  -bv_matmult_vecs - perform a matrix-vector multiply per each column
+.  -bv_matmult_mat - carry out a MatMatMult() product with a dense matrix
+-  -bv_matmult_mat_save - call MatMatMult() and keep auxiliary matrices
+
+   Note:
+   The default is BV_MATMULT_MAT.
+
+   Level: advanced
+
+.seealso: BVGetMatMultMethod(), BVMatMultType
+@*/
+PetscErrorCode BVSetMatMultMethod(BV bv,BVMatMultType method)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(bv,BV_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(bv,method,2);
+  switch (method) {
+    case BV_MATMULT_VECS:
+    case BV_MATMULT_MAT:
+    case BV_MATMULT_MAT_SAVE:
+      bv->vmm = method;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_ARG_WRONG,"Unknown matmult method");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "BVGetMatMultMethod"
+/*@
+   BVGetMatMultMethod - Gets the method used for the BVMatMult() operation.
+
+   Not Collective
+
+   Input Parameter:
+.  bv - basis vectors context
+
+   Output Parameter:
+.  method - the method for the BVMatMult() operation
+
+   Level: advanced
+
+.seealso: BVSetMatMultMethod(), BVMatMultType
+@*/
+PetscErrorCode BVGetMatMultMethod(BV bv,BVMatMultType *method)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(bv,BV_CLASSID,1);
+  PetscValidPointer(bv,method);
+  *method = bv->vmm;
   PetscFunctionReturn(0);
 }
 
@@ -851,7 +1036,7 @@ PetscErrorCode BVGetColumn(BV bv,PetscInt j,Vec *v)
   if (j>=bv->m) SETERRQ2(PetscObjectComm((PetscObject)bv),PETSC_ERR_ARG_OUTOFRANGE,"You requested column %D but only %D are available",j,bv->m);
   if (j==bv->ci[0] || j==bv->ci[1]) SETERRQ1(PetscObjectComm((PetscObject)bv),PETSC_ERR_SUP,"Column %D already fetched in a previous call to BVGetColumn",j);
   l = BVAvailableVec;
-  if (l==-1) SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_SUP,"Too many requested columns; you must call BVReleaseColumn for one of the previously fetched columns");
+  if (l==-1) SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_SUP,"Too many requested columns; you must call BVRestoreColumn for one of the previously fetched columns");
   ierr = (*bv->ops->getcolumn)(bv,j,v);CHKERRQ(ierr);
   bv->ci[l] = j;
   ierr = PetscObjectStateGet((PetscObject)bv->cv[l],&bv->st[l]);CHKERRQ(ierr);
@@ -987,9 +1172,9 @@ PetscErrorCode BVRestoreArray(BV bv,PetscScalar **a)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "BVGetVec"
+#define __FUNCT__ "BVCreateVec"
 /*@
-   BVGetVec - Creates a new Vec object with the same type and dimensions
+   BVCreateVec - Creates a new Vec object with the same type and dimensions
    as the columns of the basis vectors object.
 
    Collective on BV
@@ -1005,7 +1190,7 @@ PetscErrorCode BVRestoreArray(BV bv,PetscScalar **a)
 
    Level: beginner
 @*/
-PetscErrorCode BVGetVec(BV bv,Vec *v)
+PetscErrorCode BVCreateVec(BV bv,Vec *v)
 {
   PetscErrorCode ierr;
 
@@ -1041,7 +1226,7 @@ PetscErrorCode BVGetVec(BV bv,Vec *v)
 
    Level: intermediate
 
-.seealso: BVCreate(), BVSetSizesFromVec(), BVCopy()
+.seealso: BVDuplicateResize(), BVCreate(), BVSetSizesFromVec(), BVCopy()
 @*/
 PetscErrorCode BVDuplicate(BV V,BV *W)
 {
@@ -1056,7 +1241,7 @@ PetscErrorCode BVDuplicate(BV V,BV *W)
   ierr = BVSetSizesFromVec(*W,V->t,V->m);CHKERRQ(ierr);
   ierr = BVSetType(*W,((PetscObject)V)->type_name);CHKERRQ(ierr);
   ierr = BVSetMatrix(*W,V->matrix,V->indef);CHKERRQ(ierr);
-  ierr = BVSetOrthogonalization(*W,V->orthog_type,V->orthog_ref,V->orthog_eta);CHKERRQ(ierr);
+  ierr = BVSetOrthogonalization(*W,V->orthog_type,V->orthog_ref,V->orthog_eta,V->orthog_block);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)*W);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1098,7 +1283,7 @@ PetscErrorCode BVDuplicateResize(BV V,PetscInt m,BV *W)
   ierr = BVSetSizesFromVec(*W,V->t,m);CHKERRQ(ierr);
   ierr = BVSetType(*W,((PetscObject)V)->type_name);CHKERRQ(ierr);
   ierr = BVSetMatrix(*W,V->matrix,V->indef);CHKERRQ(ierr);
-  ierr = BVSetOrthogonalization(*W,V->orthog_type,V->orthog_ref,V->orthog_eta);CHKERRQ(ierr);
+  ierr = BVSetOrthogonalization(*W,V->orthog_type,V->orthog_ref,V->orthog_eta,V->orthog_block);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)*W);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -10,4 +10,4 @@ SOURCEH  =
 DIRS     =
 LIBBASE  = libslepcnep
 LOCDIR   = src/nep/impls/slp/ftn-auto/
-include ${SLEPC_DIR}/conf/slepc_common
+include ${SLEPC_DIR}/lib/slepc/conf/slepc_common

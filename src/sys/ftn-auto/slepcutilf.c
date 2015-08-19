@@ -1,6 +1,6 @@
 #include "petscsys.h"
 #include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include "petsc/private/fortranimpl.h"
 /* slepcutil.c */
 /* Fortran interface file */
 
@@ -22,8 +22,8 @@ extern void PetscRmPointer(void*);
 
 #else
 
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
+#define PetscToPointer(a) (*(PetscFortranAddr *)(a))
+#define PetscFromPointer(a) (PetscFortranAddr)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -32,11 +32,6 @@ extern void PetscRmPointer(void*);
 #define slepcmattile_ SLEPCMATTILE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define slepcmattile_ slepcmattile
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define slepccheckorthogonality_ SLEPCCHECKORTHOGONALITY
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define slepccheckorthogonality_ slepccheckorthogonality
 #endif
 
 
@@ -50,11 +45,6 @@ PETSC_EXTERN void PETSC_STDCALL  slepcmattile_(PetscScalar *a,Mat A,PetscScalar 
 	(Mat)PetscToPointer((B) ),*c,
 	(Mat)PetscToPointer((C) ),*d,
 	(Mat)PetscToPointer((D) ),G);
-}
-PETSC_EXTERN void PETSC_STDCALL  slepccheckorthogonality_(Vec *V,PetscInt *nv,Vec *W,PetscInt *nw,Mat B,PetscViewer viewer,PetscReal *lev, int *__ierr ){
-*__ierr = SlepcCheckOrthogonality(V,*nv,W,*nw,
-	(Mat)PetscToPointer((B) ),
-	(PetscViewer)PetscToPointer((viewer) ),lev);
 }
 #if defined(__cplusplus)
 }
