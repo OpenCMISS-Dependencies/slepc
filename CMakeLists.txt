@@ -9,7 +9,7 @@ if(NOT PETSC_SOURCE_DIR)
     set(PETSC_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../petsc)
 endif()
 
-include (${PETSC_SOURCE_DIR}/OpenCMISSPETScConfig.cmake)
+include (${PETSC_SOURCE_DIR}/cmake/OpenCMISSPETScConfig.cmake)
 include (./SLEPcConfig.cmake)
 
 configure_file(${SLEPc_SOURCE_DIR}/slepcconf.h.in ${SLEPc_BINARY_DIR}/include/slepcconf.h)
