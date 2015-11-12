@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
-project (SLEPc VERSION 3.6 LANGUAGES C Fortran CXX)
+project (SLEPc VERSION 3.6.1 LANGUAGES C Fortran CXX)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
 option(PACKAGE_CONFIG_DIR "Directory for package config files (relative to CMAKE_INSTALL_PREFIX)" "lib/cmake")
