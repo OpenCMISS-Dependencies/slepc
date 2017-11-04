@@ -542,7 +542,7 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/slepc-config-versio
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake 
     "include(CMakeFindDependencyMacro)\r\n"
     	"set(${PROJECT_NAME}_IMPORT_PREFIX \${_IMPORT_PREFIX})\r\n"
-    "find_dependency(PETSC ${PETSC_VERSION})\r\n"
+    "set(PETSC_FIND_SYSTEM ${PETSC_FIND_SYSTEM})\r\nfind_dependency(PETSC ${PETSC_VERSION})\r\n"
 )
 if (PETSC_HAVE_CUDA)
     file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/slepc-config-dependencies.cmake "find_dependency(CUDA)\r\n")
